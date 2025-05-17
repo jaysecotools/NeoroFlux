@@ -1,0 +1,2105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroFlux | Digital Healing</title>
+  <style>
+    :root {
+      --primary: #6e48aa;
+      --secondary: #9d50bb;
+      --dark: #1a1a2e;
+      --light: #f8f9fa;
+      --success: #4cc9f0;
+      --warning: #f72585;
+      --info: #4895ef;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--dark);
+      color: var(--light);
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    #app {
+      max-width: 100vw;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    
+    header {
+      padding: 1rem;
+      text-align: center;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+    }
+    
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .tagline {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+    
+    .main-container {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      padding: 1rem;
+      gap: 1rem;
+      position: relative;
+    }
+    
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+    }
+    
+    .section {
+      background: rgba(26, 26, 46, 0.8);
+      border-radius: 12px;
+      padding: 1rem;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 5;
+    }
+    
+    .section-title {
+      font-size: 1.2rem;
+      margin-bottom: 0.8rem;
+      color: var(--success);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .mood-wheel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .wheel-container {
+      position: relative;
+      width: 250px;
+      height: 250px;
+      margin: 0 auto;
+    }
+    
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .wheel:hover {
+      transform: scale(1.05);
+    }
+    
+    .wheel-section {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      transform-origin: 100% 100%;
+      clip-path: polygon(0 0, 100% 0, 100% 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      transition: all 0.2s ease;
+    }
+    
+    .wheel-section:hover {
+      filter: brightness(1.1);
+    }
+    
+    .wheel-center {
+      position: absolute;
+      width: 30%;
+      height: 30%;
+      background: white;
+      border-radius: 50%;
+      top: 35%;
+      left: 35%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: var(--dark);
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      z-index: 2;
+    }
+    
+    .intensity-slider {
+      width: 100%;
+      max-width: 300px;
+      margin: 1rem auto;
+    }
+    
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    
+    input[type="range"] {
+      width: 100%;
+      height: 8px;
+      -webkit-appearance: none;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      border-radius: 4px;
+      outline: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .quick-relief-btn {
+      background: linear-gradient(135deg, var(--warning), #b5179e);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(247, 37, 133, 0.3);
+      margin-top: 0.5rem;
+    }
+    
+    .quick-relief-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(247, 37, 133, 0.4);
+    }
+    
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .control-group {
+      flex: 1;
+      min-width: 150px;
+    }
+    
+    select, button {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: none;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      margin-top: 0.5rem;
+      cursor: pointer;
+    }
+    
+    button {
+      background: linear-gradient(135deg, var(--info), var(--primary));
+      font-weight: bold;
+      transition: all 0.2s ease;
+    }
+    
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    
+    .preset-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+    
+    .preset-btn {
+      padding: 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      text-align: center;
+    }
+    
+    .session-timer {
+      font-size: 2rem;
+      text-align: center;
+      margin: 1rem 0;
+      font-family: monospace;
+    }
+    
+    .journal-entry {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background-color: rgba(0, 0, 0, 0.3);
+      color: white;
+      resize: vertical;
+      margin-top: 0.5rem;
+    }
+    
+    .chart-container {
+      width: 100%;
+      height: 200px;
+      margin-top: 1rem;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    .active-session-controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .stop-btn {
+      background: linear-gradient(135deg, #f72585, #b5179e);
+    }
+    
+    .tab-container {
+      display: flex;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 1rem;
+    }
+    
+    .tab {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+    
+    .tab.active {
+      border-bottom: 2px solid var(--success);
+      color: var(--success);
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .history-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.8rem;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .history-item-date {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+    
+    .history-item-mood {
+      font-weight: bold;
+      color: var(--info);
+    }
+    
+    .clear-history {
+      background: rgba(247, 37, 133, 0.2);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+      margin-top: 1rem;
+    }
+    
+    .reminder-settings {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    
+    .reminder-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    input[type="time"] {
+      padding: 0.4rem;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+    }
+    
+    @media (max-width: 768px) {
+      .wheel-container {
+        width: 200px;
+        height: 200px;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+      
+      .preset-buttons {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
+    /* Animation for quick relief button */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .pulse {
+      animation: pulse 1.5s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>NeuroFlux</h1>
+      <p class="tagline">Digital Healing for Mind & Emotions</p>
+    </header>
+    
+    <canvas id="visuals"></canvas>
+    
+    <div class="main-container">
+      <div class="section" id="mood-selector">
+        <h2 class="section-title">Select Your Current State</h2>
+        <div class="mood-wheel">
+          <div class="wheel-container">
+            <div class="wheel" id="wheel">
+              <div class="wheel-section" data-mood="stress" style="background: #ff6b6b; transform: rotate(0deg);">
+                <span>Stress</span>
+              </div>
+              <div class="wheel-section" data-mood="anxiety" style="background: #ff9e2d; transform: rotate(72deg);">
+                <span>Anxiety</span>
+              </div>
+              <div class="wheel-section" data-mood="sadness" style="background: #4cc9f0; transform: rotate(144deg);">
+                <span>Sadness</span>
+              </div>
+              <div class="wheel-section" data-mood="anger" style="background: #f72585; transform: rotate(216deg);">
+                <span>Anger</span>
+              </div>
+              <div class="wheel-section" data-mood="fatigue" style="background: #7209b7; transform: rotate(288deg);">
+                <span>Fatigue</span>
+              </div>
+              <div class="wheel-center" id="wheel-center">
+                Select
+              </div>
+            </div>
+          </div>
+          
+          <div class="intensity-slider">
+            <div class="slider-label">
+              <span>Intensity: </span>
+              <span id="intensity-value">5</span>
+            </div>
+            <input type="range" id="intensity-slider" min="1" max="10" value="5">
+          </div>
+          
+          <button id="quick-relief" class="quick-relief-btn">Quick 5-Minute Relief</button>
+        </div>
+      </div>
+      
+      <div class="section hidden" id="active-session">
+        <h2 class="section-title" id="session-title">Session in Progress</h2>
+        <div class="session-timer" id="session-timer">05:00</div>
+        
+        <div class="controls">
+          <div class="control-group">
+            <label for="theme-select">Visual Theme</label>
+            <select id="theme-select">
+              <option value="nebula">Nebula</option>
+              <option value="forest">Forest</option>
+              <option value="liquid">Liquid Light</option>
+            </select>
+          </div>
+          
+          <div class="control-group">
+            <label for="nature-sounds">Nature Sounds</label>
+            <select id="nature-sounds">
+              <option value="none">None</option>
+              <option value="rain">Rain</option>
+              <option value="waves">Ocean Waves</option>
+              <option value="wind">Forest Wind</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="active-session-controls">
+          <button id="pause-btn">Pause</button>
+          <button id="stop-btn" class="stop-btn">End Session</button>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2 class="section-title">Preset Sessions</h2>
+        <div class="preset-buttons">
+          <button class="preset-btn" data-preset="panic">Panic Reset</button>
+          <button class="preset-btn" data-preset="focus">Deep Focus</button>
+          <button class="preset-btn" data-preset="creative">Creative Flow</button>
+          <button class="preset-btn" data-preset="grief">Grief Release</button>
+          <button class="preset-btn" data-preset="sleep">Sleep Aid</button>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="tab-container">
+          <div class="tab active" data-tab="journal">Journal</div>
+          <div class="tab" data-tab="progress">Progress</div>
+          <div class="tab" data-tab="history">History</div>
+          <div class="tab" data-tab="settings">Settings</div>
+        </div>
+        
+        <div class="tab-content active" id="journal-tab">
+          <label for="journal-entry">Session Reflection</label>
+          <textarea id="journal-entry" class="journal-entry" placeholder="What came up for you during this session?"></textarea>
+          <button id="save-journal">Save Reflection</button>
+        </div>
+        
+        <div class="tab-content" id="progress-tab">
+          <div class="chart-container">
+            <canvas id="progress-chart"></canvas>
+          </div>
+        </div>
+        
+        <div class="tab-content" id="history-tab">
+          <div id="history-list"></div>
+          <button id="clear-history" class="clear-history">Clear History</button>
+        </div>
+        
+        <div class="tab-content" id="settings-tab">
+          <h3>Reminders</h3>
+          <div class="reminder-settings">
+            <div class="reminder-item">
+              <input type="checkbox" id="morning-reminder">
+              <label for="morning-reminder">Morning Reset</label>
+              <input type="time" id="morning-time" value="08:00">
+            </div>
+            <div class="reminder-item">
+              <input type="checkbox" id="evening-reminder">
+              <label for="evening-reminder">Evening Wind Down</label>
+              <input type="time" id="evening-time" value="20:00">
+            </div>
+          </div>
+          <button id="save-settings">Save Settings</button>
+          
+          <h3 style="margin-top: 1rem;">Biofeedback Mode</h3>
+          <button id="biofeedback-btn">Enable Breath Detection</button>
+          <div id="breath-feedback" style="margin-top: 0.5rem;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Main App Class
+    class NeuroFlux {
+      constructor() {
+        // DOM Elements
+        this.elements = {
+          app: document.getElementById('app'),
+          wheel: document.getElementById('wheel'),
+          wheelCenter: document.getElementById('wheel-center'),
+          intensitySlider: document.getElementById('intensity-slider'),
+          intensityValue: document.getElementById('intensity-value'),
+          quickReliefBtn: document.getElementById('quick-relief'),
+          moodSelector: document.getElementById('mood-selector'),
+          activeSession: document.getElementById('active-session'),
+          sessionTitle: document.getElementById('session-title'),
+          sessionTimer: document.getElementById('session-timer'),
+          themeSelect: document.getElementById('theme-select'),
+          natureSounds: document.getElementById('nature-sounds'),
+          pauseBtn: document.getElementById('pause-btn'),
+          stopBtn: document.getElementById('stop-btn'),
+          presetBtns: document.querySelectorAll('.preset-btn'),
+          journalEntry: document.getElementById('journal-entry'),
+          saveJournalBtn: document.getElementById('save-journal'),
+          progressChart: document.getElementById('progress-chart'),
+          historyList: document.getElementById('history-list'),
+          clearHistoryBtn: document.getElementById('clear-history'),
+          tabs: document.querySelectorAll('.tab'),
+          tabContents: document.querySelectorAll('.tab-content'),
+          visuals: document.getElementById('visuals'),
+          biofeedbackBtn: document.getElementById('biofeedback-btn'),
+          breathFeedback: document.getElementById('breath-feedback'),
+          morningReminder: document.getElementById('morning-reminder'),
+          eveningReminder: document.getElementById('evening-reminder'),
+          morningTime: document.getElementById('morning-time'),
+          eveningTime: document.getElementById('evening-time'),
+          saveSettingsBtn: document.getElementById('save-settings')
+        };
+        
+        // App State
+        this.state = {
+          currentMood: null,
+          currentIntensity: 5,
+          sessionActive: false,
+          sessionPaused: false,
+          sessionEndTime: 0,
+          remainingTime: 0,
+          timerInterval: null,
+          audioEngine: null,
+          visualEngine: null,
+          journalEntries: [],
+          sessionHistory: [],
+          reminders: {},
+          biofeedbackActive: false,
+          lastBreathTime: 0,
+          breathRate: 0
+        };
+        
+        // Initialize
+        this.initAudioEngine();
+        this.initVisualEngine();
+        this.loadData();
+        this.setupEventListeners();
+        this.checkReminders();
+        setInterval(() => this.checkReminders(), 60000); // Check every minute
+        
+        // Service Worker Registration for offline use
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').then(registration => {
+              console.log('ServiceWorker registration successful');
+            }).catch(err => {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+          });
+        }
+      }
+      
+      initAudioEngine() {
+        this.state.audioEngine = new AudioEngine();
+      }
+      
+      initVisualEngine() {
+        const canvas = this.elements.visuals;
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        this.state.visualEngine = new VisualEngine(canvas);
+      }
+      
+      loadData() {
+        // Load journal entries
+        const journalData = localStorage.getItem('neuroflux_journal');
+        if (journalData) {
+          this.state.journalEntries = JSON.parse(journalData);
+        }
+        
+        // Load session history
+        const historyData = localStorage.getItem('neuroflux_history');
+        if (historyData) {
+          this.state.sessionHistory = JSON.parse(historyData);
+          this.renderHistory();
+        }
+        
+        // Load settings
+        const settingsData = localStorage.getItem('neuroflux_settings');
+        if (settingsData) {
+          const settings = JSON.parse(settingsData);
+          this.state.reminders = settings.reminders || {};
+          
+          if (this.state.reminders.morning) {
+            this.elements.morningReminder.checked = true;
+            this.elements.morningTime.value = this.state.reminders.morning.time;
+          }
+          
+          if (this.state.reminders.evening) {
+            this.elements.eveningReminder.checked = true;
+            this.elements.eveningTime.value = this.state.reminders.evening.time;
+          }
+        }
+        
+        // Initialize chart
+        this.renderProgressChart();
+      }
+      
+      saveData() {
+        localStorage.setItem('neuroflux_journal', JSON.stringify(this.state.journalEntries));
+        localStorage.setItem('neuroflux_history', JSON.stringify(this.state.sessionHistory));
+        
+        const settings = {
+          reminders: this.state.reminders
+        };
+        localStorage.setItem('neuroflux_settings', JSON.stringify(settings));
+      }
+      
+      setupEventListeners() {
+        // Mood wheel selection
+        this.elements.wheelCenter.addEventListener('click', () => {
+          if (this.state.currentMood) {
+            this.startSession(this.state.currentMood, this.state.currentIntensity);
+          }
+        });
+        
+        // Wheel sections
+        const wheelSections = document.querySelectorAll('.wheel-section');
+        wheelSections.forEach(section => {
+          section.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.state.currentMood = section.dataset.mood;
+            this.elements.wheelCenter.textContent = this.capitalizeFirstLetter(this.state.currentMood);
+          });
+        });
+        
+        // Intensity slider
+        this.elements.intensitySlider.addEventListener('input', (e) => {
+          this.state.currentIntensity = parseInt(e.target.value);
+          this.elements.intensityValue.textContent = this.state.currentIntensity;
+        });
+        
+        // Quick relief button
+        this.elements.quickReliefBtn.addEventListener('click', () => {
+          if (this.state.currentMood) {
+            this.startSession(this.state.currentMood, this.state.currentIntensity, 5 * 60);
+          } else {
+            this.showNotification('Please select a mood first');
+          }
+        });
+        
+        // Preset buttons
+        this.elements.presetBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const preset = btn.dataset.preset;
+            this.startPresetSession(preset);
+          });
+        });
+        
+        // Theme and nature sounds select
+        this.elements.themeSelect.addEventListener('change', () => {
+          if (this.state.sessionActive) {
+            this.state.visualEngine.setTheme(this.elements.themeSelect.value);
+          }
+        });
+        
+        this.elements.natureSounds.addEventListener('change', () => {
+          if (this.state.sessionActive) {
+            this.state.audioEngine.setNatureSound(this.elements.natureSounds.value);
+          }
+        });
+        
+        // Session controls
+        this.elements.pauseBtn.addEventListener('click', () => {
+          if (this.state.sessionPaused) {
+            this.resumeSession();
+          } else {
+            this.pauseSession();
+          }
+        });
+        
+        this.elements.stopBtn.addEventListener('click', () => {
+          this.endSession();
+        });
+        
+        // Journal and history
+        this.elements.saveJournalBtn.addEventListener('click', () => {
+          this.saveJournalEntry();
+        });
+        
+        this.elements.clearHistoryBtn.addEventListener('click', () => {
+          if (confirm('Are you sure you want to clear all history?')) {
+            this.state.sessionHistory = [];
+            this.state.journalEntries = [];
+            localStorage.removeItem('neuroflux_history');
+            localStorage.removeItem('neuroflux_journal');
+            this.renderHistory();
+            this.renderProgressChart();
+          }
+        });
+        
+        // Tabs
+        this.elements.tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            const tabId = tab.dataset.tab;
+            this.switchTab(tabId);
+          });
+        });
+        
+        // Biofeedback
+        this.elements.biofeedbackBtn.addEventListener('click', () => {
+          if (!this.state.biofeedbackActive) {
+            this.startBiofeedback();
+          } else {
+            this.stopBiofeedback();
+          }
+        });
+        
+        // Settings
+        this.elements.saveSettingsBtn.addEventListener('click', () => {
+          this.saveSettings();
+        });
+        
+        // Window resize
+        window.addEventListener('resize', () => {
+          this.elements.visuals.width = window.innerWidth;
+          this.elements.visuals.height = window.innerHeight;
+          if (this.state.visualEngine) {
+            this.state.visualEngine.resize();
+          }
+        });
+      }
+      
+      switchTab(tabId) {
+        // Update active tab
+        this.elements.tabs.forEach(tab => {
+          if (tab.dataset.tab === tabId) {
+            tab.classList.add('active');
+          } else {
+            tab.classList.remove('active');
+          }
+        });
+        
+        // Update active content
+        this.elements.tabContents.forEach(content => {
+          if (content.id === `${tabId}-tab`) {
+            content.classList.add('active');
+          } else {
+            content.classList.remove('active');
+          }
+        });
+        
+        // Special handling for progress tab
+        if (tabId === 'progress') {
+          setTimeout(() => this.renderProgressChart(), 100);
+        }
+      }
+      
+      startSession(mood, intensity, duration = null) {
+        // Default duration based on intensity (1-10 maps to 3-15 minutes)
+        const minutes = duration ? duration / 60 : 3 + (intensity * 1.2);
+        const sessionDuration = duration || Math.round(minutes * 60);
+        
+        // Set session end time (current time + duration in seconds)
+        this.state.sessionEndTime = Date.now() + (sessionDuration * 1000);
+        this.state.remainingTime = sessionDuration;
+        this.state.sessionActive = true;
+        this.state.sessionPaused = false;
+        
+        // Update UI
+        this.elements.moodSelector.classList.add('hidden');
+        this.elements.activeSession.classList.remove('hidden');
+        this.elements.sessionTitle.textContent = `${this.capitalizeFirstLetter(mood)} Relief Session`;
+        this.updateTimerDisplay();
+        
+        // Start timer
+        this.state.timerInterval = setInterval(() => this.updateTimer(), 1000);
+        
+        // Start audio based on mood and intensity
+        const frequencies = this.getFrequenciesForMood(mood, intensity);
+        this.state.audioEngine.startBinauralBeats(frequencies.carrier, frequencies.beat);
+        this.state.audioEngine.setNatureSound(this.elements.natureSounds.value);
+        
+        // Start visuals based on mood and theme
+        const visualParams = this.getVisualParamsForMood(mood, intensity);
+        this.state.visualEngine.start(visualParams, this.elements.themeSelect.value);
+        
+        // Add quick pulse animation to quick relief button
+        this.elements.quickReliefBtn.classList.add('pulse');
+      }
+      
+      startPresetSession(preset) {
+        const presets = {
+          panic: {
+            mood: 'anxiety',
+            intensity: 8,
+            duration: 5 * 60,
+            theme: 'nebula',
+            natureSound: 'rain',
+            frequencies: { carrier: 200, beat: 6 },
+            visualParams: { type: 'fractal', speed: 0.7, color: '#4cc9f0' }
+          },
+          focus: {
+            mood: 'fatigue',
+            intensity: 6,
+            duration: 25 * 60,
+            theme: 'liquid',
+            natureSound: 'none',
+            frequencies: { carrier: 300, beat: 40 },
+            visualParams: { type: 'particles', speed: 1.2, color: '#f72585' }
+          },
+          creative: {
+            mood: 'fatigue',
+            intensity: 5,
+            duration: 45 * 60,
+            theme: 'forest',
+            natureSound: 'wind',
+            frequencies: { carrier: 250, beat: 30 },
+            visualParams: { type: 'flow', speed: 0.9, color: '#9d50bb' }
+          },
+          grief: {
+            mood: 'sadness',
+            intensity: 7,
+            duration: 15 * 60,
+            theme: 'nebula',
+            natureSound: 'waves',
+            frequencies: { carrier: 180, beat: 3 },
+            visualParams: { type: 'ink', speed: 0.3, color: '#7209b7' }
+          },
+          sleep: {
+            mood: 'fatigue',
+            intensity: 4,
+            duration: 20 * 60,
+            theme: 'forest',
+            natureSound: 'rain',
+            frequencies: { carrier: 150, beat: 2 },
+            visualParams: { type: 'particles', speed: 0.2, color: '#4895ef' }
+          }
+        };
+        
+        const presetConfig = presets[preset];
+        if (!presetConfig) return;
+        
+        // Set UI to match preset
+        this.elements.themeSelect.value = presetConfig.theme;
+        this.elements.natureSounds.value = presetConfig.natureSound;
+        
+        // Set session end time
+        this.state.sessionEndTime = Date.now() + (presetConfig.duration * 1000);
+        this.state.remainingTime = presetConfig.duration;
+        this.state.sessionActive = true;
+        this.state.sessionPaused = false;
+        
+        // Update UI
+        this.elements.moodSelector.classList.add('hidden');
+        this.elements.activeSession.classList.remove('hidden');
+        this.elements.sessionTitle.textContent = `${this.capitalizeFirstLetter(presetConfig.mood)} (${this.capitalizeFirstLetter(preset)})`;
+        this.updateTimerDisplay();
+        
+        // Start timer
+        this.state.timerInterval = setInterval(() => this.updateTimer(), 1000);
+        
+        // Start audio
+        this.state.audioEngine.startBinauralBeats(presetConfig.frequencies.carrier, presetConfig.frequencies.beat);
+        this.state.audioEngine.setNatureSound(presetConfig.natureSound);
+        
+        // Start visuals
+        this.state.visualEngine.start(presetConfig.visualParams, presetConfig.theme);
+        
+        // Add quick pulse animation to quick relief button
+        this.elements.quickReliefBtn.classList.add('pulse');
+      }
+      
+      pauseSession() {
+        if (!this.state.sessionActive || this.state.sessionPaused) return;
+        
+        clearInterval(this.state.timerInterval);
+        this.state.sessionPaused = true;
+        this.state.audioEngine.pause();
+        this.state.visualEngine.pause();
+        this.elements.pauseBtn.textContent = 'Resume';
+      }
+      
+      resumeSession() {
+        if (!this.state.sessionActive || !this.state.sessionPaused) return;
+        
+        // Update end time based on remaining time
+        this.state.sessionEndTime = Date.now() + (this.state.remainingTime * 1000);
+        this.state.timerInterval = setInterval(() => this.updateTimer(), 1000);
+        this.state.sessionPaused = false;
+        this.state.audioEngine.resume();
+        this.state.visualEngine.resume();
+        this.elements.pauseBtn.textContent = 'Pause';
+      }
+      
+      endSession() {
+        if (!this.state.sessionActive) return;
+        
+        clearInterval(this.state.timerInterval);
+        this.state.sessionActive = false;
+        this.state.sessionPaused = false;
+        
+        // Stop audio and visuals
+        this.state.audioEngine.stop();
+        this.state.visualEngine.stop();
+        
+        // Update UI
+        this.elements.moodSelector.classList.remove('hidden');
+        this.elements.activeSession.classList.add('hidden');
+        this.elements.quickReliefBtn.classList.remove('pulse');
+        this.elements.pauseBtn.textContent = 'Pause';
+        
+        // Save session to history
+        this.saveSessionToHistory();
+        
+        // Switch to journal tab
+        this.switchTab('journal');
+      }
+      
+      updateTimer() {
+        if (this.state.sessionPaused) return;
+        
+        const now = Date.now();
+        this.state.remainingTime = Math.max(0, Math.floor((this.state.sessionEndTime - now) / 1000));
+        
+        this.updateTimerDisplay();
+        
+        if (this.state.remainingTime <= 0) {
+          this.endSession();
+        }
+      }
+      
+      updateTimerDisplay() {
+        const minutes = Math.floor(this.state.remainingTime / 60);
+        const seconds = this.state.remainingTime % 60;
+        this.elements.sessionTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      }
+      
+      getFrequenciesForMood(mood, intensity) {
+        // Base frequencies adjusted by intensity
+        const intensityFactor = intensity / 10;
+        
+        const moodFrequencies = {
+          stress: { baseCarrier: 200, baseBeat: 10 },
+          anxiety: { baseCarrier: 180, baseBeat: 6 },
+          sadness: { baseCarrier: 160, baseBeat: 4 },
+          anger: { baseCarrier: 220, baseBeat: 14 },
+          fatigue: { baseCarrier: 150, baseBeat: 2 }
+        };
+        
+        const base = moodFrequencies[mood] || moodFrequencies.stress;
+        const carrier = base.baseCarrier + (30 * intensityFactor);
+        const beat = base.baseBeat + (4 * intensityFactor);
+        
+        return { carrier, beat };
+      }
+      
+      getVisualParamsForMood(mood, intensity) {
+        const intensityFactor = intensity / 10;
+        
+        const moodVisuals = {
+          stress: { type: 'flow', baseSpeed: 0.8, color: '#ff6b6b' },
+          anxiety: { type: 'particles', baseSpeed: 1.2, color: '#ff9e2d' },
+          sadness: { type: 'ink', baseSpeed: 0.3, color: '#4cc9f0' },
+          anger: { type: 'fractal', baseSpeed: 1.5, color: '#f72585' },
+          fatigue: { type: 'particles', baseSpeed: 0.2, color: '#7209b7' }
+        };
+        
+        const base = moodVisuals[mood] || moodVisuals.stress;
+        const speed = base.baseSpeed * (0.5 + intensityFactor);
+        
+        return { type: base.type, speed, color: base.color };
+      }
+      
+      saveSessionToHistory() {
+        if (!this.state.currentMood) return;
+        
+        const session = {
+          date: new Date().toISOString(),
+          mood: this.state.currentMood,
+          intensity: this.state.currentIntensity,
+          duration: this.state.remainingTime
+        };
+        
+        this.state.sessionHistory.unshift(session);
+        if (this.state.sessionHistory.length > 100) {
+          this.state.sessionHistory.pop();
+        }
+        
+        this.saveData();
+        this.renderHistory();
+        this.renderProgressChart();
+      }
+      
+      saveJournalEntry() {
+        const entry = {
+          date: new Date().toISOString(),
+          mood: this.state.currentMood,
+          text: this.elements.journalEntry.value
+        };
+        
+        if (entry.text.trim()) {
+          this.state.journalEntries.unshift(entry);
+          if (this.state.journalEntries.length > 50) {
+            this.state.journalEntries.pop();
+          }
+          
+          this.saveData();
+          this.elements.journalEntry.value = '';
+          this.showNotification('Journal entry saved');
+        }
+      }
+      
+      renderHistory() {
+        const historyList = this.elements.historyList;
+        historyList.innerHTML = '';
+        
+        if (this.state.sessionHistory.length === 0) {
+          historyList.innerHTML = '<p>No session history yet</p>';
+          return;
+        }
+        
+        this.state.sessionHistory.forEach(session => {
+          const date = new Date(session.date);
+          const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          
+          const item = document.createElement('div');
+          item.className = 'history-item';
+          item.innerHTML = `
+            <div>
+              <span class="history-item-mood">${this.capitalizeFirstLetter(session.mood)}</span>
+              <span> - Intensity ${session.intensity}</span>
+            </div>
+            <div class="history-item-date">${dateStr}</div>
+          `;
+          
+          historyList.appendChild(item);
+        });
+      }
+      
+      renderProgressChart() {
+        const ctx = this.elements.progressChart.getContext('2d');
+        
+        // Group by day and calculate average intensity per mood
+        const moodData = {
+          stress: [],
+          anxiety: [],
+          sadness: [],
+          anger: [],
+          fatigue: []
+        };
+        
+        const dates = [];
+        const dataMap = {};
+        
+        // Process last 30 days of data
+        const now = new Date();
+        for (let i = 29; i >= 0; i--) {
+          const date = new Date(now);
+          date.setDate(date.getDate() - i);
+          const dateKey = date.toISOString().split('T')[0];
+          dates.push(dateKey);
+          dataMap[dateKey] = {
+            stress: { sum: 0, count: 0 },
+            anxiety: { sum: 0, count: 0 },
+            sadness: { sum: 0, count: 0 },
+            anger: { sum: 0, count: 0 },
+            fatigue: { sum: 0, count: 0 }
+          };
+        }
+        
+        // Populate data
+        this.state.sessionHistory.forEach(session => {
+          const sessionDate = new Date(session.date);
+          const dateKey = sessionDate.toISOString().split('T')[0];
+          
+          if (dataMap[dateKey] && dataMap[dateKey][session.mood]) {
+            dataMap[dateKey][session.mood].sum += session.intensity;
+            dataMap[dateKey][session.mood].count++;
+          }
+        });
+        
+        // Calculate averages
+        dates.forEach(date => {
+          Object.keys(moodData).forEach(mood => {
+            const data = dataMap[date][mood];
+            const avg = data.count > 0 ? (data.sum / data.count) : null;
+            moodData[mood].push(avg);
+          });
+        });
+        
+        // Create chart
+        if (window.Chart) {
+          // Destroy previous chart if it exists
+          if (this.state.progressChart) {
+            this.state.progressChart.destroy();
+          }
+          
+          this.state.progressChart = new window.Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: dates.map(date => date.split('-')[1] + '/' + date.split('-')[2]),
+              datasets: [
+                {
+                  label: 'Stress',
+                  data: moodData.stress,
+                  borderColor: '#ff6b6b',
+                  backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                  tension: 0.3,
+                  spanGaps: true
+                },
+                {
+                  label: 'Anxiety',
+                  data: moodData.anxiety,
+                  borderColor: '#ff9e2d',
+                  backgroundColor: 'rgba(255, 158, 45, 0.1)',
+                  tension: 0.3,
+                  spanGaps: true
+                },
+                {
+                  label: 'Sadness',
+                  data: moodData.sadness,
+                  borderColor: '#4cc9f0',
+                  backgroundColor: 'rgba(76, 201, 240, 0.1)',
+                  tension: 0.3,
+                  spanGaps: true
+                },
+                {
+                  label: 'Anger',
+                  data: moodData.anger,
+                  borderColor: '#f72585',
+                  backgroundColor: 'rgba(247, 37, 133, 0.1)',
+                  tension: 0.3,
+                  spanGaps: true
+                },
+                {
+                  label: 'Fatigue',
+                  data: moodData.fatigue,
+                  borderColor: '#7209b7',
+                  backgroundColor: 'rgba(114, 9, 183, 0.1)',
+                  tension: 0.3,
+                  spanGaps: true
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 10,
+                  ticks: {
+                    stepSize: 2
+                  }
+                }
+              },
+              plugins: {
+                legend: {
+                  position: 'top',
+                  labels: {
+                    color: '#f8f9fa'
+                  }
+                },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false
+                }
+              },
+              elements: {
+                point: {
+                  radius: 3,
+                  hoverRadius: 5
+                }
+              }
+            }
+          });
+        }
+      }
+      
+      startBiofeedback() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          this.showNotification('Biofeedback not supported in your browser');
+          return;
+        }
+        
+        this.state.biofeedbackActive = true;
+        this.elements.biofeedbackBtn.textContent = 'Disable Biofeedback';
+        this.elements.breathFeedback.textContent = 'Listening for breath...';
+        
+        navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+          .then(stream => {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const analyser = audioContext.createAnalyser();
+            const microphone = audioContext.createMediaStreamSource(stream);
+            microphone.connect(analyser);
+            
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            let lastBreathTime = 0;
+            let breathCount = 0;
+            let lastVolume = 0;
+            let breathDetected = false;
+            
+            const detectBreath = () => {
+              if (!this.state.biofeedbackActive) return;
+              
+              analyser.getByteTimeDomainData(dataArray);
+              
+              let sum = 0;
+              for (let i = 0; i < bufferLength; i++) {
+                sum += Math.abs(dataArray[i] - 128);
+              }
+              
+              const volume = sum / bufferLength;
+              
+              // Detect breath (simple threshold-based detection)
+              if (volume > 10 && !breathDetected && volume > lastVolume * 1.5) {
+                breathDetected = true;
+                const now = Date.now();
+                
+                if (lastBreathTime > 0) {
+                  const breathInterval = (now - lastBreathTime) / 1000;
+                  this.state.breathRate = 60 / breathInterval;
+                  
+                  this.elements.breathFeedback.innerHTML = `
+                    Breath rate: <strong>${this.state.breathRate.toFixed(1)} breaths/min</strong>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem;">
+                      ${this.getBreathFeedback(this.state.breathRate)}
+                    </div>
+                  `;
+                }
+                
+                lastBreathTime = now;
+                breathCount++;
+              } else if (volume < 5) {
+                breathDetected = false;
+              }
+              
+              lastVolume = volume;
+              requestAnimationFrame(detectBreath);
+            };
+            
+            detectBreath();
+            
+            // Save the stream and analyser to stop later
+            this.state.biofeedbackStream = stream;
+            this.state.biofeedbackAnalyser = analyser;
+          })
+          .catch(err => {
+            console.error('Error accessing microphone:', err);
+            this.showNotification('Microphone access denied');
+            this.stopBiofeedback();
+          });
+      }
+      
+      stopBiofeedback() {
+        this.state.biofeedbackActive = false;
+        this.elements.biofeedbackBtn.textContent = 'Enable Biofeedback';
+        this.elements.breathFeedback.textContent = '';
+        
+        if (this.state.biofeedbackStream) {
+          this.state.biofeedbackStream.getTracks().forEach(track => track.stop());
+        }
+      }
+      
+      getBreathFeedback(rate) {
+        if (rate > 20) return 'Your breathing is fast. Try slowing down to 6-8 breaths per minute for relaxation.';
+        if (rate > 12) return 'Your breathing is normal. Try slowing to 6 breaths per minute for deeper relaxation.';
+        if (rate > 6) return 'Good slow breathing. This helps activate your parasympathetic nervous system.';
+        return 'Very slow breathing. Excellent for deep meditation and relaxation.';
+      }
+      
+      saveSettings() {
+        this.state.reminders = {};
+        
+        if (this.elements.morningReminder.checked) {
+          this.state.reminders.morning = {
+            enabled: true,
+            time: this.elements.morningTime.value
+          };
+        }
+        
+        if (this.elements.eveningReminder.checked) {
+          this.state.reminders.evening = {
+            enabled: true,
+            time: this.elements.eveningTime.value
+          };
+        }
+        
+        this.saveData();
+        this.showNotification('Settings saved');
+        this.checkReminders();
+      }
+      
+      checkReminders() {
+        if (!('Notification' in window)) return;
+        
+        if (Notification.permission !== 'granted') {
+          Notification.requestPermission();
+          return;
+        }
+        
+        const now = new Date();
+        const currentHours = now.getHours();
+        const currentMinutes = now.getMinutes();
+        const currentTime = `${currentHours.toString().padStart(2, '0')}:${currentMinutes.toString().padStart(2, '0')}`;
+        
+        // Check morning reminder
+        if (this.state.reminders.morning && this.state.reminders.morning.enabled) {
+          if (currentTime === this.state.reminders.morning.time) {
+            this.showNotification('🌞 Morning Reset Time', {
+              body: 'Start your day with a calming NeuroFlux session'
+            });
+          }
+        }
+        
+        // Check evening reminder
+        if (this.state.reminders.evening && this.state.reminders.evening.enabled) {
+          if (currentTime === this.state.reminders.evening.time) {
+            this.showNotification('🌙 Evening Wind Down', {
+              body: 'Release the day\'s stress with a NeuroFlux session'
+            });
+          }
+        }
+      }
+      
+      showNotification(title, options = {}) {
+        if (!('Notification' in window)) return;
+        
+        if (Notification.permission === 'granted') {
+          new Notification(title, options);
+        } else if (Notification.permission !== 'denied') {
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              new Notification(title, options);
+            }
+          });
+        }
+      }
+      
+      capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+      }
+    }
+    
+    // Audio Engine
+    class AudioEngine {
+      constructor() {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        this.oscillators = [];
+        this.gainNodes = [];
+        this.natureSound = null;
+        this.panner = this.audioContext.createStereoPanner();
+        this.panner.pan.value = 0;
+        this.panner.connect(this.audioContext.destination);
+        
+        this.natureSoundBuffers = {};
+        this.loadNatureSounds();
+      }
+      
+      async loadNatureSounds() {
+        // Create simple noise buffers for nature sounds
+        const sampleRate = this.audioContext.sampleRate;
+        const bufferLength = 5 * sampleRate; // 5 seconds
+        
+        // Rain sound (pink noise)
+        const rainBuffer = this.audioContext.createBuffer(1, bufferLength, sampleRate);
+        const rainData = rainBuffer.getChannelData(0);
+        let b0, b1, b2, b3, b4, b5, b6;
+        b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
+        
+        for (let i = 0; i < bufferLength; i++) {
+          const white = Math.random() * 2 - 1;
+          b0 = 0.99886 * b0 + white * 0.0555179;
+          b1 = 0.99332 * b1 + white * 0.0750759;
+          b2 = 0.96900 * b2 + white * 0.1538520;
+          b3 = 0.86650 * b3 + white * 0.3104856;
+          b4 = 0.55000 * b4 + white * 0.5329522;
+          b5 = -0.7616 * b5 - white * 0.0168980;
+          rainData[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+          rainData[i] *= 0.11; // (roughly) compensate for gain
+          b6 = white * 0.115926;
+        }
+        this.natureSoundBuffers.rain = rainBuffer;
+        
+        // Ocean waves (modulated noise)
+        const waveBuffer = this.audioContext.createBuffer(1, bufferLength, sampleRate);
+        const waveData = waveBuffer.getChannelData(0);
+        let phase = 0;
+        const freq = 0.2;
+        
+        for (let i = 0; i < bufferLength; i++) {
+          const mod = Math.sin(phase) * 0.5 + 0.5;
+          waveData[i] = (Math.random() * 2 - 1) * mod * 0.3;
+          phase += (2 * Math.PI * freq) / sampleRate;
+        }
+        this.natureSoundBuffers.waves = waveBuffer;
+        
+        // Forest wind (low-pass filtered noise)
+        const windBuffer = this.audioContext.createBuffer(1, bufferLength, sampleRate);
+        const windData = windBuffer.getChannelData(0);
+        let lastOut = 0;
+        const cutoff = 100 / sampleRate;
+        
+        for (let i = 0; i < bufferLength; i++) {
+          const white = Math.random() * 2 - 1;
+          lastOut = (1.0 - cutoff) * lastOut + cutoff * white;
+          windData[i] = lastOut * 0.4;
+        }
+        this.natureSoundBuffers.wind = windBuffer;
+      }
+      
+      startBinauralBeats(carrierFreq, beatFreq) {
+        this.stop();
+        
+        // Create left and right oscillators with slightly different frequencies
+        const leftFreq = carrierFreq;
+        const rightFreq = carrierFreq + beatFreq;
+        
+        // Left channel
+        const leftOsc = this.audioContext.createOscillator();
+        leftOsc.frequency.value = leftFreq;
+        const leftGain = this.audioContext.createGain();
+        leftGain.gain.value = 0.1;
+        
+        leftOsc.connect(leftGain);
+        leftGain.connect(this.panner);
+        
+        // Right channel
+        const rightOsc = this.audioContext.createOscillator();
+        rightOsc.frequency.value = rightFreq;
+        const rightGain = this.audioContext.createGain();
+        rightGain.gain.value = 0.1;
+        
+        rightOsc.connect(rightGain);
+        rightGain.connect(this.panner);
+        
+        // Start oscillators
+        leftOsc.start();
+        rightOsc.start();
+        
+        // Save references
+        this.oscillators = [leftOsc, rightOsc];
+        this.gainNodes = [leftGain, rightGain];
+        
+        // Start 8D audio effect (slow panning)
+        this.startPanningEffect();
+      }
+      
+      startPanningEffect() {
+        if (this.pannerInterval) clearInterval(this.pannerInterval);
+        
+        let direction = 1;
+        this.pannerInterval = setInterval(() => {
+          const currentPan = this.panner.pan.value;
+          let newPan = currentPan + (0.01 * direction);
+          
+          if (newPan >= 1) {
+            newPan = 1;
+            direction = -1;
+          } else if (newPan <= -1) {
+            newPan = -1;
+            direction = 1;
+          }
+          
+          this.panner.pan.value = newPan;
+        }, 20);
+      }
+      
+      setNatureSound(soundType) {
+        if (this.natureSound) {
+          this.natureSound.stop();
+          this.natureSound = null;
+        }
+        
+        if (soundType === 'none') return;
+        
+        const buffer = this.natureSoundBuffers[soundType];
+        if (!buffer) return;
+        
+        const source = this.audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+        source.connect(this.audioContext.destination);
+        source.start();
+        
+        this.natureSound = source;
+      }
+      
+      pause() {
+        if (this.audioContext.state === 'running') {
+          this.audioContext.suspend();
+        }
+        
+        if (this.pannerInterval) {
+          clearInterval(this.pannerInterval);
+        }
+      }
+      
+      resume() {
+        if (this.audioContext.state === 'suspended') {
+          this.audioContext.resume();
+        }
+        
+        this.startPanningEffect();
+      }
+      
+      stop() {
+        this.oscillators.forEach(osc => osc.stop());
+        this.oscillators = [];
+        this.gainNodes = [];
+        
+        if (this.natureSound) {
+          this.natureSound.stop();
+          this.natureSound = null;
+        }
+        
+        if (this.pannerInterval) {
+          clearInterval(this.pannerInterval);
+        }
+        
+        this.panner.pan.value = 0;
+      }
+    }
+    
+    // Visual Engine
+    class VisualEngine {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.width = canvas.width;
+        this.height = canvas.height;
+        this.animationId = null;
+        this.particles = [];
+        this.theme = 'nebula';
+        this.params = {};
+        this.lastTime = 0;
+        this.paused = false;
+      }
+      
+      start(params, theme) {
+        this.stop();
+        this.params = params;
+        this.theme = theme || 'nebula';
+        this.lastTime = 0;
+        this.paused = false;
+        
+        // Initialize based on visual type
+        switch (params.type) {
+          case 'particles':
+            this.initParticles();
+            break;
+          case 'flow':
+            this.initFlowField();
+            break;
+          case 'fractal':
+            this.initFractal();
+            break;
+          case 'ink':
+            this.initInk();
+            break;
+          default:
+            this.initParticles();
+        }
+        
+        this.animate();
+      }
+      
+      initParticles() {
+        const particleCount = Math.floor(this.width * this.height / 1000);
+        this.particles = [];
+        
+        for (let i = 0; i < particleCount; i++) {
+          this.particles.push({
+            x: Math.random() * this.width,
+            y: Math.random() * this.height,
+            size: Math.random() * 3 + 1,
+            speedX: (Math.random() - 0.5) * this.params.speed,
+            speedY: (Math.random() - 0.5) * this.params.speed,
+            color: this.params.color
+          });
+        }
+      }
+      
+      initFlowField() {
+        const particleCount = Math.floor(this.width * this.height / 2000);
+        this.particles = [];
+        
+        // Create flow field grid
+        this.flowField = [];
+        const cols = Math.floor(this.width / 20);
+        const rows = Math.floor(this.height / 20);
+        
+        for (let i = 0; i < cols; i++) {
+          this.flowField[i] = [];
+          for (let j = 0; j < rows; j++) {
+            this.flowField[i][j] = Math.random() * Math.PI * 2;
+          }
+        }
+        
+        // Create particles
+        for (let i = 0; i < particleCount; i++) {
+          this.particles.push({
+            x: Math.random() * this.width,
+            y: Math.random() * this.height,
+            size: Math.random() * 2 + 0.5,
+            speed: Math.random() * 0.5 + 0.5 * this.params.speed,
+            color: this.params.color,
+            life: Math.random() * 100
+          });
+        }
+      }
+      
+      initFractal() {
+        this.fractalPoints = [];
+        const centerX = this.width / 2;
+        const centerY = this.height / 2;
+        const radius = Math.min(this.width, this.height) * 0.4;
+        
+        // Create initial points for fractal
+        for (let i = 0; i < 3; i++) {
+          const angle = (i * Math.PI * 2) / 3;
+          this.fractalPoints.push({
+            x: centerX + Math.cos(angle) * radius,
+            y: centerY + Math.sin(angle) * radius
+          });
+        }
+        
+        // Add some randomness
+        for (let i = 0; i < 100; i++) {
+          const p1 = this.fractalPoints[Math.floor(Math.random() * this.fractalPoints.length)];
+          const p2 = this.fractalPoints[Math.floor(Math.random() * this.fractalPoints.length)];
+          
+          const midX = (p1.x + p2.x) / 2;
+          const midY = (p1.y + p2.y) / 2;
+          
+          this.fractalPoints.push({
+            x: midX + (Math.random() - 0.5) * 20,
+            y: midY + (Math.random() - 0.5) * 20
+          });
+        }
+      }
+      
+      initInk() {
+        this.inkDrops = [];
+        const dropCount = Math.floor(this.width * this.height / 5000);
+        
+        for (let i = 0; i < dropCount; i++) {
+          this.inkDrops.push({
+            x: Math.random() * this.width,
+            y: Math.random() * this.height,
+            radius: Math.random() * 5 + 1,
+            growthRate: Math.random() * 0.1 + 0.05 * this.params.speed,
+            maxRadius: Math.random() * 50 + 20,
+            color: this.params.color,
+            alpha: 0.5 + Math.random() * 0.5
+          });
+        }
+      }
+      
+      animate() {
+        if (this.paused) return;
+        
+        this.animationId = requestAnimationFrame((timestamp) => {
+          if (!this.lastTime) this.lastTime = timestamp;
+          const deltaTime = timestamp - this.lastTime;
+          this.lastTime = timestamp;
+          
+          this.clearCanvas();
+          
+          // Render based on visual type
+          switch (this.params.type) {
+            case 'particles':
+              this.renderParticles(deltaTime);
+              break;
+            case 'flow':
+              this.renderFlowField(deltaTime);
+              break;
+            case 'fractal':
+              this.renderFractal(deltaTime);
+              break;
+            case 'ink':
+              this.renderInkDrops(deltaTime);
+              break;
+          }
+          
+          this.animate();
+        });
+      }
+      
+      clearCanvas() {
+        // Different clear styles based on theme
+        switch (this.theme) {
+          case 'forest':
+            this.ctx.fillStyle = 'rgba(10, 30, 20, 0.1)';
+            break;
+          case 'liquid':
+            this.ctx.fillStyle = 'rgba(0, 0, 20, 0.1)';
+            break;
+          default: // nebula
+            this.ctx.fillStyle = 'rgba(0, 0, 10, 0.1)';
+        }
+        
+        this.ctx.fillRect(0, 0, this.width, this.height);
+      }
+      
+      renderParticles(deltaTime) {
+        this.particles.forEach(particle => {
+          // Update position
+          particle.x += particle.speedX;
+          particle.y += particle.speedY;
+          
+          // Bounce off edges
+          if (particle.x < 0 || particle.x > this.width) particle.speedX *= -1;
+          if (particle.y < 0 || particle.y > this.height) particle.speedY *= -1;
+          
+          // Draw particle
+          this.ctx.beginPath();
+          this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          
+          // Different fill styles based on theme
+          switch (this.theme) {
+            case 'forest':
+              this.ctx.fillStyle = `hsla(${(particle.x / this.width) * 120 + 100}, 70%, 50%, 0.8)`;
+              break;
+            case 'liquid':
+              const gradient = this.ctx.createRadialGradient(
+                particle.x, particle.y, 0,
+                particle.x, particle.y, particle.size
+              );
+              gradient.addColorStop(0, particle.color);
+              gradient.addColorStop(1, 'rgba(0,0,0,0)');
+              this.ctx.fillStyle = gradient;
+              break;
+            default: // nebula
+              this.ctx.fillStyle = particle.color;
+          }
+          
+          this.ctx.fill();
+        });
+      }
+      
+      renderFlowField(deltaTime) {
+        // Update flow field
+        const cols = this.flowField.length;
+        const rows = this.flowField[0].length;
+        
+        for (let i = 0; i < cols; i++) {
+          for (let j = 0; j < rows; j++) {
+            // Slowly change angles
+            this.flowField[i][j] += (Math.random() - 0.5) * 0.1 * this.params.speed;
+          }
+        }
+        
+        // Update and draw particles
+        this.particles.forEach(particle => {
+          // Get grid cell
+          const col = Math.floor(particle.x / 20);
+          const row = Math.floor(particle.y / 20);
+          
+          if (col >= 0 && col < cols && row >= 0 && row < rows) {
+            const angle = this.flowField[col][row];
+            particle.x += Math.cos(angle) * particle.speed;
+            particle.y += Math.sin(angle) * particle.speed;
+          }
+          
+          // Wrap around edges
+          if (particle.x < 0) particle.x = this.width;
+          if (particle.x > this.width) particle.x = 0;
+          if (particle.y < 0) particle.y = this.height;
+          if (particle.y > this.height) particle.y = 0;
+          
+          // Draw particle
+          this.ctx.beginPath();
+          this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          
+          // Different fill styles based on theme
+          switch (this.theme) {
+            case 'forest':
+              this.ctx.fillStyle = `hsla(${particle.life % 360}, 80%, 50%, 0.6)`;
+              break;
+            case 'liquid':
+              this.ctx.fillStyle = `hsla(${(particle.x / this.width) * 60 + 200}, 100%, 60%, 0.7)`;
+              break;
+            default: // nebula
+              this.ctx.fillStyle = particle.color;
+          }
+          
+          this.ctx.fill();
+          
+          // Update life
+          particle.life += 0.1;
+        });
+      }
+      
+      renderFractal(deltaTime) {
+        // Draw connections between points
+        this.ctx.strokeStyle = this.params.color;
+        this.ctx.lineWidth = 1;
+        
+        for (let i = 0; i < this.fractalPoints.length; i++) {
+          const p1 = this.fractalPoints[i];
+          
+          // Connect to a few random other points
+          for (let j = 0; j < 3; j++) {
+            const p2 = this.fractalPoints[Math.floor(Math.random() * this.fractalPoints.length)];
+            
+            // Different line styles based on theme
+            switch (this.theme) {
+              case 'forest':
+                const dist = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+                const alpha = 1 - Math.min(dist / 300, 0.9);
+                this.ctx.strokeStyle = `rgba(100, 255, 150, ${alpha})`;
+                this.ctx.lineWidth = 0.5 + Math.random();
+                break;
+              case 'liquid':
+                this.ctx.strokeStyle = `hsla(${(i % 360)}, 100%, 60%, 0.3)`;
+                this.ctx.lineWidth = 0.3;
+                break;
+              default: // nebula
+                this.ctx.strokeStyle = this.params.color;
+                this.ctx.lineWidth = 0.5;
+            }
+            
+            this.ctx.beginPath();
+            this.ctx.moveTo(p1.x, p1.y);
+            this.ctx.lineTo(p2.x, p2.y);
+            this.ctx.stroke();
+          }
+        }
+        
+        // Move points slightly
+        this.fractalPoints.forEach(point => {
+          point.x += (Math.random() - 0.5) * this.params.speed;
+          point.y += (Math.random() - 0.5) * this.params.speed;
+          
+          // Keep within bounds
+          point.x = Math.max(0, Math.min(this.width, point.x));
+          point.y = Math.max(0, Math.min(this.height, point.y));
+        });
+        
+        // Occasionally add new points
+        if (Math.random() < 0.05 * this.params.speed) {
+          const p1 = this.fractalPoints[Math.floor(Math.random() * this.fractalPoints.length)];
+          const p2 = this.fractalPoints[Math.floor(Math.random() * this.fractalPoints.length)];
+          
+          this.fractalPoints.push({
+            x: (p1.x + p2.x) / 2 + (Math.random() - 0.5) * 20,
+            y: (p1.y + p2.y) / 2 + (Math.random() - 0.5) * 20
+          });
+        }
+      }
+      
+      renderInkDrops(deltaTime) {
+        this.inkDrops.forEach(drop => {
+          // Grow drop
+          drop.radius += drop.growthRate;
+          
+          // Reset if reached max size
+          if (drop.radius >= drop.maxRadius) {
+            drop.radius = 1;
+            drop.x = Math.random() * this.width;
+            drop.y = Math.random() * this.height;
+          }
+          
+          // Draw drop
+          this.ctx.beginPath();
+          this.ctx.arc(drop.x, drop.y, drop.radius, 0, Math.PI * 2);
+          
+          // Different fill styles based on theme
+          switch (this.theme) {
+            case 'forest':
+              const gradient = this.ctx.createRadialGradient(
+                drop.x, drop.y, 0,
+                drop.x, drop.y, drop.radius
+              );
+              gradient.addColorStop(0, `hsla(${(drop.x / this.width) * 60 + 150}, 80%, 40%, ${drop.alpha})`);
+              gradient.addColorStop(1, 'hsla(150, 80%, 20%, 0)');
+              this.ctx.fillStyle = gradient;
+              break;
+            case 'liquid':
+              this.ctx.fillStyle = `hsla(${(drop.y / this.height) * 60 + 200}, 100%, 50%, ${drop.alpha * 0.5})`;
+              break;
+            default: // nebula
+              const nebulaGradient = this.ctx.createRadialGradient(
+                drop.x, drop.y, 0,
+                drop.x, drop.y, drop.radius
+              );
+              nebulaGradient.addColorStop(0, drop.color);
+              nebulaGradient.addColorStop(1, 'rgba(0,0,0,0)');
+              this.ctx.fillStyle = nebulaGradient;
+          }
+          
+          this.ctx.fill();
+        });
+      }
+      
+      setTheme(theme) {
+        this.theme = theme;
+      }
+      
+      pause() {
+        this.paused = true;
+        cancelAnimationFrame(this.animationId);
+      }
+      
+      resume() {
+        this.paused = false;
+        this.lastTime = 0;
+        this.animate();
+      }
+      
+      stop() {
+        cancelAnimationFrame(this.animationId);
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        this.particles = [];
+        this.inkDrops = [];
+        this.fractalPoints = [];
+        this.flowField = [];
+      }
+      
+      resize() {
+        this.width = this.canvas.width = window.innerWidth;
+        this.height = this.canvas.height = window.innerHeight;
+        
+        // Reinitialize if we're in the middle of a session
+        if (this.params.type) {
+          switch (this.params.type) {
+            case 'particles':
+              this.initParticles();
+              break;
+            case 'flow':
+              this.initFlowField();
+              break;
+            case 'fractal':
+              this.initFractal();
+              break;
+            case 'ink':
+              this.initInk();
+              break;
+          }
+        }
+      }
+    }
+    
+    // Embedded Chart.js (minified and modified to work inline)
+    // This is a heavily simplified version of Chart.js for our needs
+    (function() {
+      if (typeof window.Chart === 'undefined') {
+        window.Chart = function(ctx) {
+          const gradients = {};
+          
+          function createGradient(ctx, area, color) {
+            const gradient = ctx.createLinearGradient(0, area.bottom, 0, area.top);
+            gradient.addColorStop(0, color.replace(')', ', 0)').replace('rgb', 'rgba'));
+            gradient.addColorStop(1, color);
+            return gradient;
+          }
+          
+          return {
+            config: null,
+            data: null,
+            destroy: function() {},
+            
+            update: function() {
+              if (!this.config || !this.data) return;
+              
+              const {data, options} = this.config;
+              const {datasets, labels} = data;
+              const area = {
+                top: 0,
+                bottom: ctx.canvas.height,
+                left: 0,
+                right: ctx.canvas.width
+              };
+              
+              // Clear canvas
+              ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+              
+              // Draw grid
+              if (options.scales && options.scales.y) {
+                const yScale = options.scales.y;
+                const yRange = yScale.max - yScale.min;
+                const step = yScale.ticks.stepSize || (yRange / 5);
+                
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                
+                for (let y = yScale.min; y <= yScale.max; y += step) {
+                  const yPos = area.bottom - ((y - yScale.min) / yRange) * (area.bottom - area.top);
+                  ctx.moveTo(area.left, yPos);
+                  ctx.lineTo(area.right, yPos);
+                }
+                ctx.stroke();
+              }
+              
+              // Draw datasets
+              datasets.forEach((dataset, i) => {
+                if (!gradients[i]) {
+                  gradients[i] = createGradient(ctx, area, dataset.borderColor);
+                }
+                
+                ctx.strokeStyle = gradients[i];
+                ctx.fillStyle = dataset.backgroundColor;
+                ctx.lineWidth = dataset.borderWidth || 2;
+                
+                const xStep = (area.right - area.left) / (labels.length - 1);
+                const yRange = options.scales.y.max - options.scales.y.min;
+                
+                ctx.beginPath();
+                
+                dataset.data.forEach((value, j) => {
+                  if (value === null) return;
+                  
+                  const x = area.left + (j * xStep);
+                  const y = area.bottom - ((value - options.scales.y.min) / yRange) * (area.bottom - area.top);
+                  
+                  if (j === 0) {
+                    ctx.moveTo(x, y);
+                  } else {
+                    ctx.lineTo(x, y);
+                  }
+                  
+                  // Draw point
+                  if (options.elements && options.elements.point && options.elements.point.radius > 0) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, options.elements.point.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                  }
+                });
+                
+                ctx.stroke();
+              });
+            }
+          };
+        };
+      }
+    })();
+    
+    // Initialize the app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      const app = new NeuroFlux();
+    });
+  </script>
+</body>
+</html>
