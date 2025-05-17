@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NeuroFlux | Digital Healing</title>
+  <title>NeuroFlux | Advanced Healing</title>
   <style>
     :root {
       --primary: #6e48aa;
@@ -23,19 +23,47 @@
     
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--dark);
       color: var(--light);
       line-height: 1.6;
-      overflow-x: hidden;
-      position: relative;
+      overflow: hidden;
     }
     
     #app {
-      max-width: 100vw;
-      min-height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       display: flex;
       flex-direction: column;
+    }
+    
+    /* Visuals layer - full screen behind content */
+    #visuals-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+    }
+    
+    #visuals {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Content layer */
+    #content {
       position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background-color: rgba(10, 10, 20, 0.2);
+      backdrop-filter: blur(5px);
+      overflow-y: auto;
     }
     
     header {
@@ -44,7 +72,6 @@
       background: linear-gradient(135deg, var(--primary), var(--secondary));
       color: white;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      z-index: 10;
     }
     
     h1 {
@@ -58,22 +85,11 @@
     }
     
     .main-container {
-      display: flex;
       flex: 1;
+      display: flex;
       flex-direction: column;
       padding: 1rem;
       gap: 1rem;
-      position: relative;
-    }
-    
-    canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 1;
-      pointer-events: none;
     }
     
     .section {
@@ -83,7 +99,6 @@
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      z-index: 5;
     }
     
     .section-title {
@@ -372,6 +387,52 @@
       color: white;
     }
     
+    /* Enhanced visual controls */
+    .visual-controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .visual-intensity {
+      flex: 1;
+    }
+    
+    /* Audio visualization */
+    .audio-bars {
+      display: flex;
+      height: 60px;
+      align-items: flex-end;
+      gap: 2px;
+      margin-top: 1rem;
+    }
+    
+    .audio-bar {
+      flex: 1;
+      background: linear-gradient(to top, var(--info), var(--primary));
+      min-width: 3px;
+      border-radius: 2px;
+      transition: height 0.1s ease;
+    }
+    
+    /* Full-screen toggle */
+    .fullscreen-btn {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      z-index: 100;
+      background: rgba(0,0,0,0.5);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    
     @media (max-width: 768px) {
       .wheel-container {
         width: 200px;
@@ -384,6 +445,10 @@
       
       .preset-buttons {
         grid-template-columns: 1fr 1fr;
+      }
+      
+      .visual-controls {
+        flex-direction: column;
       }
     }
     
@@ -401,144 +466,684 @@
 </head>
 <body>
   <div id="app">
-    <header>
-      <h1>NeuroFlux</h1>
-      <p class="tagline">Digital Healing for Mind & Emotions</p>
-    </header>
+    <!-- Visuals layer (full screen) -->
+    <div id="visuals-container">
+      <canvas id="visuals"></canvas>
+    </div>
     
-    <canvas id="visuals"></canvas>
-    
-    <div class="main-container">
-      <div class="section" id="mood-selector">
-        <h2 class="section-title">Select Your Current State</h2>
-        <div class="mood-wheel">
-          <div class="wheel-container">
-            <div class="wheel" id="wheel">
-              <div class="wheel-section" data-mood="stress" style="background: #ff6b6b; transform: rotate(0deg);">
-                <span>Stress</span>
-              </div>
-              <div class="wheel-section" data-mood="anxiety" style="background: #ff9e2d; transform: rotate(72deg);">
-                <span>Anxiety</span>
-              </div>
-              <div class="wheel-section" data-mood="sadness" style="background: #4cc9f0; transform: rotate(144deg);">
-                <span>Sadness</span>
-              </div>
-              <div class="wheel-section" data-mood="anger" style="background: #f72585; transform: rotate(216deg);">
-                <span>Anger</span>
-              </div>
-              <div class="wheel-section" data-mood="fatigue" style="background: #7209b7; transform: rotate(288deg);">
-                <span>Fatigue</span>
-              </div>
-              <div class="wheel-center" id="wheel-center">
-                Select
-              </div>
-            </div>
-          </div>
-          
-          <div class="intensity-slider">
-            <div class="slider-label">
-              <span>Intensity: </span>
-              <span id="intensity-value">5</span>
-            </div>
-            <input type="range" id="intensity-slider" min="1" max="10" value="5">
-          </div>
-          
-          <button id="quick-relief" class="quick-relief-btn">Quick 5-Minute Relief</button>
-        </div>
-      </div>
+    <!-- Content layer -->
+    <div id="content">
+      <header>
+        <h1>NeuroFlux</h1>
+        <p class="tagline">Advanced Audio-Visual Healing</p>
+      </header>
       
-      <div class="section hidden" id="active-session">
-        <h2 class="section-title" id="session-title">Session in Progress</h2>
-        <div class="session-timer" id="session-timer">05:00</div>
-        
-        <div class="controls">
-          <div class="control-group">
-            <label for="theme-select">Visual Theme</label>
-            <select id="theme-select">
-              <option value="nebula">Nebula</option>
-              <option value="forest">Forest</option>
-              <option value="liquid">Liquid Light</option>
-            </select>
-          </div>
-          
-          <div class="control-group">
-            <label for="nature-sounds">Nature Sounds</label>
-            <select id="nature-sounds">
-              <option value="none">None</option>
-              <option value="rain">Rain</option>
-              <option value="waves">Ocean Waves</option>
-              <option value="wind">Forest Wind</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="active-session-controls">
-          <button id="pause-btn">Pause</button>
-          <button id="stop-btn" class="stop-btn">End Session</button>
-        </div>
-      </div>
-      
-      <div class="section">
-        <h2 class="section-title">Preset Sessions</h2>
-        <div class="preset-buttons">
-          <button class="preset-btn" data-preset="panic">Panic Reset</button>
-          <button class="preset-btn" data-preset="focus">Deep Focus</button>
-          <button class="preset-btn" data-preset="creative">Creative Flow</button>
-          <button class="preset-btn" data-preset="grief">Grief Release</button>
-          <button class="preset-btn" data-preset="sleep">Sleep Aid</button>
-        </div>
-      </div>
-      
-      <div class="section">
-        <div class="tab-container">
-          <div class="tab active" data-tab="journal">Journal</div>
-          <div class="tab" data-tab="progress">Progress</div>
-          <div class="tab" data-tab="history">History</div>
-          <div class="tab" data-tab="settings">Settings</div>
-        </div>
-        
-        <div class="tab-content active" id="journal-tab">
-          <label for="journal-entry">Session Reflection</label>
-          <textarea id="journal-entry" class="journal-entry" placeholder="What came up for you during this session?"></textarea>
-          <button id="save-journal">Save Reflection</button>
-        </div>
-        
-        <div class="tab-content" id="progress-tab">
-          <div class="chart-container">
-            <canvas id="progress-chart"></canvas>
-          </div>
-        </div>
-        
-        <div class="tab-content" id="history-tab">
-          <div id="history-list"></div>
-          <button id="clear-history" class="clear-history">Clear History</button>
-        </div>
-        
-        <div class="tab-content" id="settings-tab">
-          <h3>Reminders</h3>
-          <div class="reminder-settings">
-            <div class="reminder-item">
-              <input type="checkbox" id="morning-reminder">
-              <label for="morning-reminder">Morning Reset</label>
-              <input type="time" id="morning-time" value="08:00">
+      <div class="main-container">
+        <div class="section" id="mood-selector">
+          <h2 class="section-title">Select Your Current State</h2>
+          <div class="mood-wheel">
+            <div class="wheel-container">
+              <div class="wheel" id="wheel">
+                <div class="wheel-section" data-mood="stress" style="background: #ff6b6b; transform: rotate(0deg);">
+                  <span>Stress</span>
+                </div>
+                <div class="wheel-section" data-mood="anxiety" style="background: #ff9e2d; transform: rotate(72deg);">
+                  <span>Anxiety</span>
+                </div>
+                <div class="wheel-section" data-mood="sadness" style="background: #4cc9f0; transform: rotate(144deg);">
+                  <span>Sadness</span>
+                </div>
+                <div class="wheel-section" data-mood="anger" style="background: #f72585; transform: rotate(216deg);">
+                  <span>Anger</span>
+                </div>
+                <div class="wheel-section" data-mood="fatigue" style="background: #7209b7; transform: rotate(288deg);">
+                  <span>Fatigue</span>
+                </div>
+                <div class="wheel-center" id="wheel-center">
+                  Select
+                </div>
+              </div>
             </div>
-            <div class="reminder-item">
-              <input type="checkbox" id="evening-reminder">
-              <label for="evening-reminder">Evening Wind Down</label>
-              <input type="time" id="evening-time" value="20:00">
+            
+            <div class="intensity-slider">
+              <div class="slider-label">
+                <span>Intensity: </span>
+                <span id="intensity-value">5</span>
+              </div>
+              <input type="range" id="intensity-slider" min="1" max="10" value="5">
+            </div>
+            
+            <button id="quick-relief" class="quick-relief-btn">Quick 5-Minute Relief</button>
+          </div>
+        </div>
+        
+        <div class="section hidden" id="active-session">
+          <h2 class="section-title" id="session-title">Session in Progress</h2>
+          <div class="session-timer" id="session-timer">05:00</div>
+          
+          <div class="controls">
+            <div class="control-group">
+              <label for="binaural-type">Binaural Type</label>
+              <select id="binaural-type">
+                <option value="theta">Theta (4-8Hz) - Deep Relaxation</option>
+                <option value="alpha">Alpha (8-12Hz) - Calm Focus</option>
+                <option value="beta">Beta (12-30Hz) - Active Mind</option>
+                <option value="gamma">Gamma (30-100Hz) - Peak Cognition</option>
+                <option value="delta">Delta (0.5-4Hz) - Deep Sleep</option>
+              </select>
+            </div>
+            
+            <div class="control-group">
+              <label for="soundscape">8D Soundscape</label>
+              <select id="soundscape">
+                <option value="none">None</option>
+                <option value="cosmic">Cosmic Journey</option>
+                <option value="forest">Enchanted Forest</option>
+                <option value="ocean">Ocean Depth</option>
+                <option value="temple">Sacred Temple</option>
+              </select>
             </div>
           </div>
-          <button id="save-settings">Save Settings</button>
           
-          <h3 style="margin-top: 1rem;">Biofeedback Mode</h3>
-          <button id="biofeedback-btn">Enable Breath Detection</button>
-          <div id="breath-feedback" style="margin-top: 0.5rem;"></div>
+          <div class="visual-controls">
+            <div class="control-group visual-intensity">
+              <label for="visual-intensity">Visual Intensity</label>
+              <input type="range" id="visual-intensity" min="1" max="10" value="5">
+            </div>
+            
+            <div class="control-group">
+              <label for="visual-theme">Theme</label>
+              <select id="visual-theme">
+                <option value="nebula">Cosmic Nebula</option>
+                <option value="fluid">Liquid Energy</option>
+                <option value="particles">Quantum Particles</option>
+                <option value="fractal">Infinite Fractal</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="audio-bars" id="audio-bars">
+            <div class="audio-bar"></div>
+            <div class="audio-bar"></div>
+            <div class="audio-bar"></div>
+            <div class="audio-bar"></div>
+            <div class="audio-bar"></div>
+            <div class="audio-bar"></div>
+            <div class="audio-bar"></div>
+            <div class="audio-bar"></div>
+            <div class="audio-bar"></div>
+            <div class="audio-bar"></div>
+          </div>
+          
+          <div class="active-session-controls">
+            <button id="pause-btn">Pause</button>
+            <button id="stop-btn" class="stop-btn">End Session</button>
+          </div>
+        </div>
+        
+        <div class="section">
+          <h2 class="section-title">Preset Sessions</h2>
+          <div class="preset-buttons">
+            <button class="preset-btn" data-preset="panic">Panic Reset</button>
+            <button class="preset-btn" data-preset="focus">Deep Focus</button>
+            <button class="preset-btn" data-preset="creative">Creative Flow</button>
+            <button class="preset-btn" data-preset="grief">Grief Release</button>
+            <button class="preset-btn" data-preset="sleep">Sleep Aid</button>
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="tab-container">
+            <div class="tab active" data-tab="journal">Journal</div>
+            <div class="tab" data-tab="progress">Progress</div>
+            <div class="tab" data-tab="history">History</div>
+            <div class="tab" data-tab="settings">Settings</div>
+          </div>
+          
+          <div class="tab-content active" id="journal-tab">
+            <label for="journal-entry">Session Reflection</label>
+            <textarea id="journal-entry" class="journal-entry" placeholder="What came up for you during this session?"></textarea>
+            <button id="save-journal">Save Reflection</button>
+          </div>
+          
+          <div class="tab-content" id="progress-tab">
+            <div class="chart-container">
+              <canvas id="progress-chart"></canvas>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="history-tab">
+            <div id="history-list"></div>
+            <button id="clear-history" class="clear-history">Clear History</button>
+          </div>
+          
+          <div class="tab-content" id="settings-tab">
+            <h3>Reminders</h3>
+            <div class="reminder-settings">
+              <div class="reminder-item">
+                <input type="checkbox" id="morning-reminder">
+                <label for="morning-reminder">Morning Reset</label>
+                <input type="time" id="morning-time" value="08:00">
+              </div>
+              <div class="reminder-item">
+                <input type="checkbox" id="evening-reminder">
+                <label for="evening-reminder">Evening Wind Down</label>
+                <input type="time" id="evening-time" value="20:00">
+              </div>
+            </div>
+            <button id="save-settings">Save Settings</button>
+            
+            <h3 style="margin-top: 1rem;">Biofeedback Mode</h3>
+            <button id="biofeedback-btn">Enable Breath Detection</button>
+            <div id="breath-feedback" style="margin-top: 0.5rem;"></div>
+          </div>
         </div>
       </div>
     </div>
+    
+    <button class="fullscreen-btn" id="fullscreen-btn">⤢</button>
   </div>
 
   <script>
+    // Enhanced Audio Engine with 8D and precise binaurals
+    class AdvancedAudioEngine {
+      constructor() {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        this.oscillators = [];
+        this.gainNodes = [];
+        this.panners = [];
+        this.analyser = this.audioContext.createAnalyser();
+        this.analyser.fftSize = 32;
+        this.binauralType = 'theta';
+        this.soundscape = null;
+        this.soundscapeBuffer = null;
+        this.isPlaying = false;
+        this.lastPanUpdate = 0;
+        this.panDirection = 1;
+        this.panSpeed = 0.0005;
+        
+        // Setup audio graph
+        this.merger = this.audioContext.createChannelMerger(2);
+        this.merger.connect(this.analyser);
+        this.analyser.connect(this.audioContext.destination);
+        
+        // Preload soundscapes
+        this.soundscapeBuffers = {};
+        this.loadSoundscapes();
+      }
+      
+      async loadSoundscapes() {
+        // Create procedural soundscapes
+        const sampleRate = this.audioContext.sampleRate;
+        const bufferLength = 10 * sampleRate; // 10 second loops
+        
+        // Cosmic Journey (ethereal pads with slow modulation)
+        const cosmicBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
+        const cosmicLeft = cosmicBuffer.getChannelData(0);
+        const cosmicRight = cosmicBuffer.getChannelData(1);
+        for (let i = 0; i < bufferLength; i++) {
+          const t = i / sampleRate;
+          cosmicLeft[i] = Math.sin(t * 110) * 0.2 * Math.sin(t * 0.3) +
+                         Math.sin(t * 220.5) * 0.1 * Math.sin(t * 0.35);
+          cosmicRight[i] = Math.sin(t * 111.7) * 0.2 * Math.sin(t * 0.31) +
+                          Math.sin(t * 221.3) * 0.1 * Math.sin(t * 0.36);
+        }
+        this.soundscapeBuffers.cosmic = cosmicBuffer;
+        
+        // Enchanted Forest (nature sounds with wind)
+        const forestBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
+        const forestLeft = forestBuffer.getChannelData(0);
+        const forestRight = forestBuffer.getChannelData(1);
+        let windPhase = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          const t = i / sampleRate;
+          // Wind
+          windPhase += 0.0001 * (1 + Math.sin(t * 0.2));
+          const wind = Math.random() * 0.1 * Math.sin(windPhase);
+          
+          // Birds and leaves
+          const birdChirp = Math.random() > 0.995 ? (Math.random() * 0.3) : 0;
+          const leafRustle = Math.random() > 0.99 ? (Math.random() * 0.2) : 0;
+          
+          forestLeft[i] = wind * 0.7 + birdChirp * 0.3 + leafRustle * 0.5;
+          forestRight[i] = wind * 0.3 + birdChirp * 0.7 + leafRustle * 0.5;
+        }
+        this.soundscapeBuffers.forest = forestBuffer;
+        
+        // Ocean Depth (deep waves with bubbles)
+        const oceanBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
+        const oceanLeft = oceanBuffer.getChannelData(0);
+        const oceanRight = oceanBuffer.getChannelData(1);
+        let wavePhase = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          const t = i / sampleRate;
+          // Waves
+          wavePhase += 0.0005;
+          const wave = Math.sin(wavePhase) * 0.3 * Math.sin(t * 0.5);
+          
+          // Bubbles
+          const bubble = Math.random() > 0.99 ? (Math.random() * 0.2) : 0;
+          
+          oceanLeft[i] = wave * 0.6 + bubble * 0.4;
+          oceanRight[i] = wave * 0.4 + bubble * 0.6;
+        }
+        this.soundscapeBuffers.ocean = oceanBuffer;
+        
+        // Sacred Temple (singing bowls with harmonics)
+        const templeBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
+        const templeLeft = templeBuffer.getChannelData(0);
+        const templeRight = templeBuffer.getChannelData(1);
+        let bowlPhase = 0;
+        let decay = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          const t = i / sampleRate;
+          if (Math.random() > 0.999) {
+            bowlPhase = 0;
+            decay = 1.0;
+          }
+          
+          if (decay > 0) {
+            bowlPhase += 0.0005;
+            decay *= 0.9999;
+            const bowl = decay * (
+              Math.sin(bowlPhase * 110) * 0.5 +
+              Math.sin(bowlPhase * 220.5) * 0.25 +
+              Math.sin(bowlPhase * 330.7) * 0.125
+            );
+            
+            templeLeft[i] = bowl * 0.6;
+            templeRight[i] = bowl * 0.4;
+          } else {
+            templeLeft[i] = 0;
+            templeRight[i] = 0;
+          }
+        }
+        this.soundscapeBuffers.temple = templeBuffer;
+      }
+      
+      startBinauralBeats(type) {
+        this.stop();
+        this.binauralType = type;
+        
+        // Set frequencies based on brainwave type
+        const { carrierFreq, beatFreq } = this.getFrequenciesForType(type);
+        const leftFreq = carrierFreq;
+        const rightFreq = carrierFreq + beatFreq;
+        
+        // Create oscillators
+        const leftOsc = this.audioContext.createOscillator();
+        leftOsc.type = 'sine';
+        leftOsc.frequency.value = leftFreq;
+        
+        const rightOsc = this.audioContext.createOscillator();
+        rightOsc.type = 'sine';
+        rightOsc.frequency.value = rightFreq;
+        
+        // Create gain nodes
+        const leftGain = this.audioContext.createGain();
+        leftGain.gain.value = 0.1;
+        
+        const rightGain = this.audioContext.createGain();
+        rightGain.gain.value = 0.1;
+        
+        // Create panners for 8D effect
+        const leftPanner = this.audioContext.createStereoPanner();
+        leftPanner.pan.value = -1;
+        
+        const rightPanner = this.audioContext.createStereoPanner();
+        rightPanner.pan.value = 1;
+        
+        // Connect nodes
+        leftOsc.connect(leftGain).connect(leftPanner).connect(this.merger, 0, 0);
+        rightOsc.connect(rightGain).connect(rightPanner).connect(this.merger, 0, 1);
+        
+        // Start oscillators
+        leftOsc.start();
+        rightOsc.start();
+        
+        // Save references
+        this.oscillators = [leftOsc, rightOsc];
+        this.gainNodes = [leftGain, rightGain];
+        this.panners = [leftPanner, rightPanner];
+        
+        this.isPlaying = true;
+        this.lastPanUpdate = performance.now();
+        
+        // Start 8D panning effect
+        this.updatePanning();
+      }
+      
+      getFrequenciesForType(type) {
+        const types = {
+          theta: { carrierFreq: 150, beatFreq: 6 },  // 4-8Hz
+          alpha: { carrierFreq: 200, beatFreq: 10 }, // 8-12Hz
+          beta: { carrierFreq: 250, beatFreq: 18 },  // 12-30Hz
+          gamma: { carrierFreq: 300, beatFreq: 40 }, // 30-100Hz
+          delta: { carrierFreq: 120, beatFreq: 2 }   // 0.5-4Hz
+        };
+        
+        return types[type] || types.theta;
+      }
+      
+      playSoundscape(type) {
+        if (type === 'none') {
+          if (this.soundscape) {
+            this.soundscape.stop();
+            this.soundscape = null;
+          }
+          return;
+        }
+        
+        const buffer = this.soundscapeBuffers[type];
+        if (!buffer) return;
+        
+        if (this.soundscape) {
+          this.soundscape.stop();
+        }
+        
+        const source = this.audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+        source.connect(this.merger);
+        source.start();
+        
+        this.soundscape = source;
+      }
+      
+      updatePanning() {
+        if (!this.isPlaying) return;
+        
+        const now = performance.now();
+        const deltaTime = now - this.lastPanUpdate;
+        this.lastPanUpdate = now;
+        
+        // Update pan positions with smooth movement
+        const panIncrement = this.panSpeed * deltaTime * this.panDirection;
+        
+        this.panners[0].pan.value = Math.sin(now * 0.001) * 0.8;
+        this.panners[1].pan.value = Math.sin(now * 0.001 + Math.PI/2) * 0.8;
+        
+        // More complex 8D movement
+        const leftPan = Math.sin(now * 0.0007) * 0.9;
+        const rightPan = Math.cos(now * 0.0008) * 0.9;
+        
+        this.panners[0].pan.value = leftPan;
+        this.panners[1].pan.value = rightPan;
+        
+        // Apply volume modulation based on pan position
+        this.gainNodes[0].gain.value = 0.1 * (1 - leftPan * 0.5);
+        this.gainNodes[1].gain.value = 0.1 * (1 - rightPan * 0.5);
+        
+        requestAnimationFrame(() => this.updatePanning());
+      }
+      
+      getAudioData() {
+        const bufferLength = this.analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        this.analyser.getByteFrequencyData(dataArray);
+        return dataArray;
+      }
+      
+      stop() {
+        this.oscillators.forEach(osc => osc.stop());
+        this.oscillators = [];
+        this.gainNodes = [];
+        this.panners = [];
+        
+        if (this.soundscape) {
+          this.soundscape.stop();
+          this.soundscape = null;
+        }
+        
+        this.isPlaying = false;
+      }
+    }
+    
+    // Enhanced Visual Engine with full-screen effects
+    class AdvancedVisualEngine {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.resize();
+        this.particles = [];
+        this.theme = 'nebula';
+        this.visualType = 'particles';
+        this.intensity = 5;
+        this.isAnimating = false;
+        this.audioData = new Uint8Array(10);
+        this.lastFrameTime = 0;
+        
+        window.addEventListener('resize', () => this.resize());
+      }
+      
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        this.width = this.canvas.width;
+        this.height = this.canvas.height;
+        
+        if (this.isAnimating) {
+          this.initParticles();
+        }
+      }
+      
+      start(theme, visualType, intensity) {
+        this.theme = theme;
+        this.visualType = visualType;
+        this.intensity = intensity;
+        this.isAnimating = true;
+        this.lastFrameTime = 0;
+        
+        this.initParticles();
+        this.animate();
+      }
+      
+      initParticles() {
+        const particleCount = Math.floor((this.width * this.height) / 1000) * (this.intensity / 5);
+        this.particles = [];
+        
+        for (let i = 0; i < particleCount; i++) {
+          this.particles.push(this.createParticle());
+        }
+      }
+      
+      createParticle() {
+        const types = {
+          nebula: {
+            x: Math.random() * this.width,
+            y: Math.random() * this.height,
+            size: Math.random() * 5 + 1,
+            speedX: (Math.random() - 0.5) * (this.intensity * 0.2),
+            speedY: (Math.random() - 0.5) * (this.intensity * 0.2),
+            color: `hsla(${Math.random() * 60 + 200}, 80%, 60%, ${Math.random() * 0.5 + 0.3})`,
+            life: Math.random() * 100,
+            type: 'standard'
+          },
+          fluid: {
+            x: Math.random() * this.width,
+            y: Math.random() * this.height,
+            size: Math.random() * 10 + 5,
+            speedX: (Math.random() - 0.5) * (this.intensity * 0.1),
+            speedY: (Math.random() - 0.5) * (this.intensity * 0.1),
+            color: `hsla(${Math.random() * 120 + 180}, 80%, 50%, ${Math.random() * 0.3 + 0.2})`,
+            life: 0,
+            type: 'fluid'
+          },
+          particles: {
+            x: Math.random() * this.width,
+            y: Math.random() * this.height,
+            size: Math.random() * 3 + 1,
+            speedX: (Math.random() - 0.5) * (this.intensity * 0.3),
+            speedY: (Math.random() - 0.5) * (this.intensity * 0.3),
+            color: `hsla(${Math.random() * 360}, 100%, 70%, 0.8)`,
+            life: Math.random() * 100,
+            type: 'quantum'
+          },
+          fractal: {
+            x: this.width / 2 + (Math.random() - 0.5) * 100,
+            y: this.height / 2 + (Math.random() - 0.5) * 100,
+            size: Math.random() * 2 + 1,
+            speedX: (Math.random() - 0.5) * (this.intensity * 0.05),
+            speedY: (Math.random() - 0.5) * (this.intensity * 0.05),
+            color: `hsla(${Math.random() * 60 + 270}, 80%, 60%, 0.7)`,
+            life: 0,
+            type: 'fractal'
+          }
+        };
+        
+        return types[this.theme] || types.nebula;
+      }
+      
+      animate() {
+        if (!this.isAnimating) return;
+        
+        const now = performance.now();
+        const deltaTime = now - this.lastFrameTime;
+        this.lastFrameTime = now;
+        
+        this.clearCanvas();
+        this.updateParticles(deltaTime);
+        this.drawParticles();
+        
+        requestAnimationFrame(() => this.animate());
+      }
+      
+      clearCanvas() {
+        // Theme-based clearing
+        switch (this.theme) {
+          case 'fluid':
+            this.ctx.fillStyle = 'rgba(5, 10, 20, 0.1)';
+            break;
+          case 'particles':
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            break;
+          case 'fractal':
+            this.ctx.fillStyle = 'rgba(10, 5, 20, 0.2)';
+            break;
+          default: // nebula
+            this.ctx.fillStyle = 'rgba(0, 5, 15, 0.1)';
+        }
+        
+        this.ctx.fillRect(0, 0, this.width, this.height);
+      }
+      
+      updateParticles(deltaTime) {
+        // Update based on audio data
+        const audioScale = this.audioData ? (this.audioData[3] / 255) * 2 : 1;
+        
+        this.particles.forEach(particle => {
+          // Move particle
+          particle.x += particle.speedX * audioScale;
+          particle.y += particle.speedY * audioScale;
+          
+          // Apply theme-specific behavior
+          switch (particle.type) {
+            case 'fluid':
+              particle.size = 5 + Math.sin(particle.life * 0.05) * 5;
+              particle.life += 0.1;
+              break;
+              
+            case 'quantum':
+              if (Math.random() < 0.01) {
+                particle.speedX = (Math.random() - 0.5) * (this.intensity * 0.3);
+                particle.speedY = (Math.random() - 0.5) * (this.intensity * 0.3);
+              }
+              break;
+              
+            case 'fractal':
+              particle.x += (this.width/2 - particle.x) * 0.001;
+              particle.y += (this.height/2 - particle.y) * 0.001;
+              break;
+          }
+          
+          // Wrap around edges
+          if (particle.x < 0) particle.x = this.width;
+          if (particle.x > this.width) particle.x = 0;
+          if (particle.y < 0) particle.y = this.height;
+          if (particle.y > this.height) particle.y = 0;
+          
+          // Random regeneration
+          if (Math.random() < 0.002 * this.intensity) {
+            const newParticle = this.createParticle();
+            particle.x = newParticle.x;
+            particle.y = newParticle.y;
+          }
+        });
+      }
+      
+      drawParticles() {
+        this.particles.forEach(particle => {
+          this.ctx.beginPath();
+          
+          // Different rendering based on type
+          switch (particle.type) {
+            case 'fluid':
+              const gradient = this.ctx.createRadialGradient(
+                particle.x, particle.y, 0,
+                particle.x, particle.y, particle.size
+              );
+              gradient.addColorStop(0, particle.color);
+              gradient.addColorStop(1, 'rgba(0,0,0,0)');
+              this.ctx.fillStyle = gradient;
+              this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+              break;
+              
+            case 'quantum':
+              this.ctx.fillStyle = particle.color;
+              this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+              
+              // Draw connection lines to nearby particles
+              if (Math.random() < 0.3) {
+                const closeParticles = this.particles.filter(p => {
+                  const dx = p.x - particle.x;
+                  const dy = p.y - particle.y;
+                  return (dx * dx + dy * dy) < 10000; // 100px distance
+                });
+                
+                closeParticles.forEach(p => {
+                  this.ctx.moveTo(particle.x, particle.y);
+                  this.ctx.lineTo(p.x, p.y);
+                });
+                
+                this.ctx.strokeStyle = particle.color.replace('0.8', '0.2');
+                this.ctx.lineWidth = 0.5;
+                this.ctx.stroke();
+              }
+              break;
+              
+            case 'fractal':
+              this.ctx.strokeStyle = particle.color;
+              this.ctx.lineWidth = particle.size;
+              
+              // Draw connections to other particles
+              const connections = Math.floor(3 * this.intensity / 5);
+              for (let i = 0; i < connections; i++) {
+                const randomParticle = this.particles[Math.floor(Math.random() * this.particles.length)];
+                this.ctx.moveTo(particle.x, particle.y);
+                this.ctx.lineTo(randomParticle.x, randomParticle.y);
+              }
+              this.ctx.stroke();
+              break;
+              
+            default: // standard
+              this.ctx.fillStyle = particle.color;
+              this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          }
+          
+          this.ctx.fill();
+        });
+      }
+      
+      updateAudioData(data) {
+        this.audioData = data;
+      }
+      
+      stop() {
+        this.isAnimating = false;
+        this.ctx.clearRect(0, 0, this.width, this.height);
+      }
+    }
+    
     // Main App Class
     class NeuroFlux {
       constructor() {
@@ -554,8 +1159,10 @@
           activeSession: document.getElementById('active-session'),
           sessionTitle: document.getElementById('session-title'),
           sessionTimer: document.getElementById('session-timer'),
-          themeSelect: document.getElementById('theme-select'),
-          natureSounds: document.getElementById('nature-sounds'),
+          binauralType: document.getElementById('binaural-type'),
+          soundscape: document.getElementById('soundscape'),
+          visualTheme: document.getElementById('visual-theme'),
+          visualIntensity: document.getElementById('visual-intensity'),
           pauseBtn: document.getElementById('pause-btn'),
           stopBtn: document.getElementById('stop-btn'),
           presetBtns: document.querySelectorAll('.preset-btn'),
@@ -567,13 +1174,15 @@
           tabs: document.querySelectorAll('.tab'),
           tabContents: document.querySelectorAll('.tab-content'),
           visuals: document.getElementById('visuals'),
+          audioBars: document.getElementById('audio-bars').children,
           biofeedbackBtn: document.getElementById('biofeedback-btn'),
           breathFeedback: document.getElementById('breath-feedback'),
           morningReminder: document.getElementById('morning-reminder'),
           eveningReminder: document.getElementById('evening-reminder'),
           morningTime: document.getElementById('morning-time'),
           eveningTime: document.getElementById('evening-time'),
-          saveSettingsBtn: document.getElementById('save-settings')
+          saveSettingsBtn: document.getElementById('save-settings'),
+          fullscreenBtn: document.getElementById('fullscreen-btn')
         };
         
         // App State
@@ -592,7 +1201,8 @@
           reminders: {},
           biofeedbackActive: false,
           lastBreathTime: 0,
-          breathRate: 0
+          breathRate: 0,
+          fullscreen: false
         };
         
         // Initialize
@@ -616,14 +1226,14 @@
       }
       
       initAudioEngine() {
-        this.state.audioEngine = new AudioEngine();
+        this.state.audioEngine = new AdvancedAudioEngine();
       }
       
       initVisualEngine() {
         const canvas = this.elements.visuals;
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        this.state.visualEngine = new VisualEngine(canvas);
+        this.state.visualEngine = new AdvancedVisualEngine(canvas);
       }
       
       loadData() {
@@ -712,16 +1322,33 @@
           });
         });
         
-        // Theme and nature sounds select
-        this.elements.themeSelect.addEventListener('change', () => {
+        // Audio controls
+        this.elements.binauralType.addEventListener('change', () => {
           if (this.state.sessionActive) {
-            this.state.visualEngine.setTheme(this.elements.themeSelect.value);
+            this.state.audioEngine.startBinauralBeats(this.elements.binauralType.value);
           }
         });
         
-        this.elements.natureSounds.addEventListener('change', () => {
+        this.elements.soundscape.addEventListener('change', () => {
           if (this.state.sessionActive) {
-            this.state.audioEngine.setNatureSound(this.elements.natureSounds.value);
+            this.state.audioEngine.playSoundscape(this.elements.soundscape.value);
+          }
+        });
+        
+        // Visual controls
+        this.elements.visualTheme.addEventListener('change', () => {
+          if (this.state.sessionActive) {
+            this.state.visualEngine.start(
+              this.elements.visualTheme.value,
+              'particles',
+              parseInt(this.elements.visualIntensity.value)
+            );
+          }
+        });
+        
+        this.elements.visualIntensity.addEventListener('input', () => {
+          if (this.state.sessionActive) {
+            this.state.visualEngine.intensity = parseInt(this.elements.visualIntensity.value);
           }
         });
         
@@ -776,6 +1403,11 @@
           this.saveSettings();
         });
         
+        // Fullscreen
+        this.elements.fullscreenBtn.addEventListener('click', () => {
+          this.toggleFullscreen();
+        });
+        
         // Window resize
         window.addEventListener('resize', () => {
           this.elements.visuals.width = window.innerWidth;
@@ -784,6 +1416,45 @@
             this.state.visualEngine.resize();
           }
         });
+        
+        // Start animation loop for audio visualization
+        this.startAnimationLoop();
+      }
+      
+      startAnimationLoop() {
+        const update = () => {
+          // Update audio visualization
+          if (this.state.audioEngine && this.state.sessionActive) {
+            const audioData = this.state.audioEngine.getAudioData();
+            if (audioData) {
+              for (let i = 0; i < this.elements.audioBars.length; i++) {
+                const height = (audioData[i] / 255) * 60;
+                this.elements.audioBars[i].style.height = `${height}px`;
+              }
+              
+              // Send audio data to visual engine
+              this.state.visualEngine.updateAudioData(audioData);
+            }
+          }
+          
+          requestAnimationFrame(update);
+        };
+        
+        requestAnimationFrame(update);
+      }
+      
+      toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(err => {
+            console.error('Error attempting to enable fullscreen:', err);
+          });
+          this.elements.fullscreenBtn.textContent = '⤡';
+          this.state.fullscreen = true;
+        } else {
+          document.exitFullscreen();
+          this.elements.fullscreenBtn.textContent = '⤢';
+          this.state.fullscreen = false;
+        }
       }
       
       switchTab(tabId) {
@@ -833,12 +1504,16 @@
         
         // Start audio based on mood and intensity
         const frequencies = this.getFrequenciesForMood(mood, intensity);
-        this.state.audioEngine.startBinauralBeats(frequencies.carrier, frequencies.beat);
-        this.state.audioEngine.setNatureSound(this.elements.natureSounds.value);
+        this.state.audioEngine.startBinauralBeats(this.elements.binauralType.value);
+        this.state.audioEngine.playSoundscape(this.elements.soundscape.value);
         
         // Start visuals based on mood and theme
         const visualParams = this.getVisualParamsForMood(mood, intensity);
-        this.state.visualEngine.start(visualParams, this.elements.themeSelect.value);
+        this.state.visualEngine.start(
+          this.elements.visualTheme.value,
+          'particles',
+          parseInt(this.elements.visualIntensity.value)
+        );
         
         // Add quick pulse animation to quick relief button
         this.elements.quickReliefBtn.classList.add('pulse');
@@ -850,46 +1525,46 @@
             mood: 'anxiety',
             intensity: 8,
             duration: 5 * 60,
-            theme: 'nebula',
-            natureSound: 'rain',
-            frequencies: { carrier: 200, beat: 6 },
-            visualParams: { type: 'fractal', speed: 0.7, color: '#4cc9f0' }
+            binauralType: 'theta',
+            soundscape: 'cosmic',
+            visualTheme: 'nebula',
+            visualIntensity: 7
           },
           focus: {
             mood: 'fatigue',
             intensity: 6,
             duration: 25 * 60,
-            theme: 'liquid',
-            natureSound: 'none',
-            frequencies: { carrier: 300, beat: 40 },
-            visualParams: { type: 'particles', speed: 1.2, color: '#f72585' }
+            binauralType: 'beta',
+            soundscape: 'none',
+            visualTheme: 'particles',
+            visualIntensity: 5
           },
           creative: {
             mood: 'fatigue',
             intensity: 5,
             duration: 45 * 60,
-            theme: 'forest',
-            natureSound: 'wind',
-            frequencies: { carrier: 250, beat: 30 },
-            visualParams: { type: 'flow', speed: 0.9, color: '#9d50bb' }
+            binauralType: 'alpha',
+            soundscape: 'forest',
+            visualTheme: 'fluid',
+            visualIntensity: 6
           },
           grief: {
             mood: 'sadness',
             intensity: 7,
             duration: 15 * 60,
-            theme: 'nebula',
-            natureSound: 'waves',
-            frequencies: { carrier: 180, beat: 3 },
-            visualParams: { type: 'ink', speed: 0.3, color: '#7209b7' }
+            binauralType: 'delta',
+            soundscape: 'temple',
+            visualTheme: 'fractal',
+            visualIntensity: 4
           },
           sleep: {
             mood: 'fatigue',
             intensity: 4,
             duration: 20 * 60,
-            theme: 'forest',
-            natureSound: 'rain',
-            frequencies: { carrier: 150, beat: 2 },
-            visualParams: { type: 'particles', speed: 0.2, color: '#4895ef' }
+            binauralType: 'delta',
+            soundscape: 'ocean',
+            visualTheme: 'nebula',
+            visualIntensity: 3
           }
         };
         
@@ -897,8 +1572,10 @@
         if (!presetConfig) return;
         
         // Set UI to match preset
-        this.elements.themeSelect.value = presetConfig.theme;
-        this.elements.natureSounds.value = presetConfig.natureSound;
+        this.elements.binauralType.value = presetConfig.binauralType;
+        this.elements.soundscape.value = presetConfig.soundscape;
+        this.elements.visualTheme.value = presetConfig.visualTheme;
+        this.elements.visualIntensity.value = presetConfig.visualIntensity;
         
         // Set session end time
         this.state.sessionEndTime = Date.now() + (presetConfig.duration * 1000);
@@ -916,11 +1593,15 @@
         this.state.timerInterval = setInterval(() => this.updateTimer(), 1000);
         
         // Start audio
-        this.state.audioEngine.startBinauralBeats(presetConfig.frequencies.carrier, presetConfig.frequencies.beat);
-        this.state.audioEngine.setNatureSound(presetConfig.natureSound);
+        this.state.audioEngine.startBinauralBeats(presetConfig.binauralType);
+        this.state.audioEngine.playSoundscape(presetConfig.soundscape);
         
         // Start visuals
-        this.state.visualEngine.start(presetConfig.visualParams, presetConfig.theme);
+        this.state.visualEngine.start(
+          presetConfig.visualTheme,
+          'particles',
+          presetConfig.visualIntensity
+        );
         
         // Add quick pulse animation to quick relief button
         this.elements.quickReliefBtn.classList.add('pulse');
@@ -931,8 +1612,8 @@
         
         clearInterval(this.state.timerInterval);
         this.state.sessionPaused = true;
-        this.state.audioEngine.pause();
-        this.state.visualEngine.pause();
+        this.state.audioEngine.stop();
+        this.state.visualEngine.stop();
         this.elements.pauseBtn.textContent = 'Resume';
       }
       
@@ -943,8 +1624,16 @@
         this.state.sessionEndTime = Date.now() + (this.state.remainingTime * 1000);
         this.state.timerInterval = setInterval(() => this.updateTimer(), 1000);
         this.state.sessionPaused = false;
-        this.state.audioEngine.resume();
-        this.state.visualEngine.resume();
+        
+        // Restart audio and visuals
+        this.state.audioEngine.startBinauralBeats(this.elements.binauralType.value);
+        this.state.audioEngine.playSoundscape(this.elements.soundscape.value);
+        this.state.visualEngine.start(
+          this.elements.visualTheme.value,
+          'particles',
+          parseInt(this.elements.visualIntensity.value)
+        );
+        
         this.elements.pauseBtn.textContent = 'Pause';
       }
       
@@ -1397,606 +2086,6 @@
       
       capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
-      }
-    }
-    
-    // Audio Engine
-    class AudioEngine {
-      constructor() {
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        this.oscillators = [];
-        this.gainNodes = [];
-        this.natureSound = null;
-        this.panner = this.audioContext.createStereoPanner();
-        this.panner.pan.value = 0;
-        this.panner.connect(this.audioContext.destination);
-        
-        this.natureSoundBuffers = {};
-        this.loadNatureSounds();
-      }
-      
-      async loadNatureSounds() {
-        // Create simple noise buffers for nature sounds
-        const sampleRate = this.audioContext.sampleRate;
-        const bufferLength = 5 * sampleRate; // 5 seconds
-        
-        // Rain sound (pink noise)
-        const rainBuffer = this.audioContext.createBuffer(1, bufferLength, sampleRate);
-        const rainData = rainBuffer.getChannelData(0);
-        let b0, b1, b2, b3, b4, b5, b6;
-        b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
-        
-        for (let i = 0; i < bufferLength; i++) {
-          const white = Math.random() * 2 - 1;
-          b0 = 0.99886 * b0 + white * 0.0555179;
-          b1 = 0.99332 * b1 + white * 0.0750759;
-          b2 = 0.96900 * b2 + white * 0.1538520;
-          b3 = 0.86650 * b3 + white * 0.3104856;
-          b4 = 0.55000 * b4 + white * 0.5329522;
-          b5 = -0.7616 * b5 - white * 0.0168980;
-          rainData[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-          rainData[i] *= 0.11; // (roughly) compensate for gain
-          b6 = white * 0.115926;
-        }
-        this.natureSoundBuffers.rain = rainBuffer;
-        
-        // Ocean waves (modulated noise)
-        const waveBuffer = this.audioContext.createBuffer(1, bufferLength, sampleRate);
-        const waveData = waveBuffer.getChannelData(0);
-        let phase = 0;
-        const freq = 0.2;
-        
-        for (let i = 0; i < bufferLength; i++) {
-          const mod = Math.sin(phase) * 0.5 + 0.5;
-          waveData[i] = (Math.random() * 2 - 1) * mod * 0.3;
-          phase += (2 * Math.PI * freq) / sampleRate;
-        }
-        this.natureSoundBuffers.waves = waveBuffer;
-        
-        // Forest wind (low-pass filtered noise)
-        const windBuffer = this.audioContext.createBuffer(1, bufferLength, sampleRate);
-        const windData = windBuffer.getChannelData(0);
-        let lastOut = 0;
-        const cutoff = 100 / sampleRate;
-        
-        for (let i = 0; i < bufferLength; i++) {
-          const white = Math.random() * 2 - 1;
-          lastOut = (1.0 - cutoff) * lastOut + cutoff * white;
-          windData[i] = lastOut * 0.4;
-        }
-        this.natureSoundBuffers.wind = windBuffer;
-      }
-      
-      startBinauralBeats(carrierFreq, beatFreq) {
-        this.stop();
-        
-        // Create left and right oscillators with slightly different frequencies
-        const leftFreq = carrierFreq;
-        const rightFreq = carrierFreq + beatFreq;
-        
-        // Left channel
-        const leftOsc = this.audioContext.createOscillator();
-        leftOsc.frequency.value = leftFreq;
-        const leftGain = this.audioContext.createGain();
-        leftGain.gain.value = 0.1;
-        
-        leftOsc.connect(leftGain);
-        leftGain.connect(this.panner);
-        
-        // Right channel
-        const rightOsc = this.audioContext.createOscillator();
-        rightOsc.frequency.value = rightFreq;
-        const rightGain = this.audioContext.createGain();
-        rightGain.gain.value = 0.1;
-        
-        rightOsc.connect(rightGain);
-        rightGain.connect(this.panner);
-        
-        // Start oscillators
-        leftOsc.start();
-        rightOsc.start();
-        
-        // Save references
-        this.oscillators = [leftOsc, rightOsc];
-        this.gainNodes = [leftGain, rightGain];
-        
-        // Start 8D audio effect (slow panning)
-        this.startPanningEffect();
-      }
-      
-      startPanningEffect() {
-        if (this.pannerInterval) clearInterval(this.pannerInterval);
-        
-        let direction = 1;
-        this.pannerInterval = setInterval(() => {
-          const currentPan = this.panner.pan.value;
-          let newPan = currentPan + (0.01 * direction);
-          
-          if (newPan >= 1) {
-            newPan = 1;
-            direction = -1;
-          } else if (newPan <= -1) {
-            newPan = -1;
-            direction = 1;
-          }
-          
-          this.panner.pan.value = newPan;
-        }, 20);
-      }
-      
-      setNatureSound(soundType) {
-        if (this.natureSound) {
-          this.natureSound.stop();
-          this.natureSound = null;
-        }
-        
-        if (soundType === 'none') return;
-        
-        const buffer = this.natureSoundBuffers[soundType];
-        if (!buffer) return;
-        
-        const source = this.audioContext.createBufferSource();
-        source.buffer = buffer;
-        source.loop = true;
-        source.connect(this.audioContext.destination);
-        source.start();
-        
-        this.natureSound = source;
-      }
-      
-      pause() {
-        if (this.audioContext.state === 'running') {
-          this.audioContext.suspend();
-        }
-        
-        if (this.pannerInterval) {
-          clearInterval(this.pannerInterval);
-        }
-      }
-      
-      resume() {
-        if (this.audioContext.state === 'suspended') {
-          this.audioContext.resume();
-        }
-        
-        this.startPanningEffect();
-      }
-      
-      stop() {
-        this.oscillators.forEach(osc => osc.stop());
-        this.oscillators = [];
-        this.gainNodes = [];
-        
-        if (this.natureSound) {
-          this.natureSound.stop();
-          this.natureSound = null;
-        }
-        
-        if (this.pannerInterval) {
-          clearInterval(this.pannerInterval);
-        }
-        
-        this.panner.pan.value = 0;
-      }
-    }
-    
-    // Visual Engine
-    class VisualEngine {
-      constructor(canvas) {
-        this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
-        this.width = canvas.width;
-        this.height = canvas.height;
-        this.animationId = null;
-        this.particles = [];
-        this.theme = 'nebula';
-        this.params = {};
-        this.lastTime = 0;
-        this.paused = false;
-      }
-      
-      start(params, theme) {
-        this.stop();
-        this.params = params;
-        this.theme = theme || 'nebula';
-        this.lastTime = 0;
-        this.paused = false;
-        
-        // Initialize based on visual type
-        switch (params.type) {
-          case 'particles':
-            this.initParticles();
-            break;
-          case 'flow':
-            this.initFlowField();
-            break;
-          case 'fractal':
-            this.initFractal();
-            break;
-          case 'ink':
-            this.initInk();
-            break;
-          default:
-            this.initParticles();
-        }
-        
-        this.animate();
-      }
-      
-      initParticles() {
-        const particleCount = Math.floor(this.width * this.height / 1000);
-        this.particles = [];
-        
-        for (let i = 0; i < particleCount; i++) {
-          this.particles.push({
-            x: Math.random() * this.width,
-            y: Math.random() * this.height,
-            size: Math.random() * 3 + 1,
-            speedX: (Math.random() - 0.5) * this.params.speed,
-            speedY: (Math.random() - 0.5) * this.params.speed,
-            color: this.params.color
-          });
-        }
-      }
-      
-      initFlowField() {
-        const particleCount = Math.floor(this.width * this.height / 2000);
-        this.particles = [];
-        
-        // Create flow field grid
-        this.flowField = [];
-        const cols = Math.floor(this.width / 20);
-        const rows = Math.floor(this.height / 20);
-        
-        for (let i = 0; i < cols; i++) {
-          this.flowField[i] = [];
-          for (let j = 0; j < rows; j++) {
-            this.flowField[i][j] = Math.random() * Math.PI * 2;
-          }
-        }
-        
-        // Create particles
-        for (let i = 0; i < particleCount; i++) {
-          this.particles.push({
-            x: Math.random() * this.width,
-            y: Math.random() * this.height,
-            size: Math.random() * 2 + 0.5,
-            speed: Math.random() * 0.5 + 0.5 * this.params.speed,
-            color: this.params.color,
-            life: Math.random() * 100
-          });
-        }
-      }
-      
-      initFractal() {
-        this.fractalPoints = [];
-        const centerX = this.width / 2;
-        const centerY = this.height / 2;
-        const radius = Math.min(this.width, this.height) * 0.4;
-        
-        // Create initial points for fractal
-        for (let i = 0; i < 3; i++) {
-          const angle = (i * Math.PI * 2) / 3;
-          this.fractalPoints.push({
-            x: centerX + Math.cos(angle) * radius,
-            y: centerY + Math.sin(angle) * radius
-          });
-        }
-        
-        // Add some randomness
-        for (let i = 0; i < 100; i++) {
-          const p1 = this.fractalPoints[Math.floor(Math.random() * this.fractalPoints.length)];
-          const p2 = this.fractalPoints[Math.floor(Math.random() * this.fractalPoints.length)];
-          
-          const midX = (p1.x + p2.x) / 2;
-          const midY = (p1.y + p2.y) / 2;
-          
-          this.fractalPoints.push({
-            x: midX + (Math.random() - 0.5) * 20,
-            y: midY + (Math.random() - 0.5) * 20
-          });
-        }
-      }
-      
-      initInk() {
-        this.inkDrops = [];
-        const dropCount = Math.floor(this.width * this.height / 5000);
-        
-        for (let i = 0; i < dropCount; i++) {
-          this.inkDrops.push({
-            x: Math.random() * this.width,
-            y: Math.random() * this.height,
-            radius: Math.random() * 5 + 1,
-            growthRate: Math.random() * 0.1 + 0.05 * this.params.speed,
-            maxRadius: Math.random() * 50 + 20,
-            color: this.params.color,
-            alpha: 0.5 + Math.random() * 0.5
-          });
-        }
-      }
-      
-      animate() {
-        if (this.paused) return;
-        
-        this.animationId = requestAnimationFrame((timestamp) => {
-          if (!this.lastTime) this.lastTime = timestamp;
-          const deltaTime = timestamp - this.lastTime;
-          this.lastTime = timestamp;
-          
-          this.clearCanvas();
-          
-          // Render based on visual type
-          switch (this.params.type) {
-            case 'particles':
-              this.renderParticles(deltaTime);
-              break;
-            case 'flow':
-              this.renderFlowField(deltaTime);
-              break;
-            case 'fractal':
-              this.renderFractal(deltaTime);
-              break;
-            case 'ink':
-              this.renderInkDrops(deltaTime);
-              break;
-          }
-          
-          this.animate();
-        });
-      }
-      
-      clearCanvas() {
-        // Different clear styles based on theme
-        switch (this.theme) {
-          case 'forest':
-            this.ctx.fillStyle = 'rgba(10, 30, 20, 0.1)';
-            break;
-          case 'liquid':
-            this.ctx.fillStyle = 'rgba(0, 0, 20, 0.1)';
-            break;
-          default: // nebula
-            this.ctx.fillStyle = 'rgba(0, 0, 10, 0.1)';
-        }
-        
-        this.ctx.fillRect(0, 0, this.width, this.height);
-      }
-      
-      renderParticles(deltaTime) {
-        this.particles.forEach(particle => {
-          // Update position
-          particle.x += particle.speedX;
-          particle.y += particle.speedY;
-          
-          // Bounce off edges
-          if (particle.x < 0 || particle.x > this.width) particle.speedX *= -1;
-          if (particle.y < 0 || particle.y > this.height) particle.speedY *= -1;
-          
-          // Draw particle
-          this.ctx.beginPath();
-          this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-          
-          // Different fill styles based on theme
-          switch (this.theme) {
-            case 'forest':
-              this.ctx.fillStyle = `hsla(${(particle.x / this.width) * 120 + 100}, 70%, 50%, 0.8)`;
-              break;
-            case 'liquid':
-              const gradient = this.ctx.createRadialGradient(
-                particle.x, particle.y, 0,
-                particle.x, particle.y, particle.size
-              );
-              gradient.addColorStop(0, particle.color);
-              gradient.addColorStop(1, 'rgba(0,0,0,0)');
-              this.ctx.fillStyle = gradient;
-              break;
-            default: // nebula
-              this.ctx.fillStyle = particle.color;
-          }
-          
-          this.ctx.fill();
-        });
-      }
-      
-      renderFlowField(deltaTime) {
-        // Update flow field
-        const cols = this.flowField.length;
-        const rows = this.flowField[0].length;
-        
-        for (let i = 0; i < cols; i++) {
-          for (let j = 0; j < rows; j++) {
-            // Slowly change angles
-            this.flowField[i][j] += (Math.random() - 0.5) * 0.1 * this.params.speed;
-          }
-        }
-        
-        // Update and draw particles
-        this.particles.forEach(particle => {
-          // Get grid cell
-          const col = Math.floor(particle.x / 20);
-          const row = Math.floor(particle.y / 20);
-          
-          if (col >= 0 && col < cols && row >= 0 && row < rows) {
-            const angle = this.flowField[col][row];
-            particle.x += Math.cos(angle) * particle.speed;
-            particle.y += Math.sin(angle) * particle.speed;
-          }
-          
-          // Wrap around edges
-          if (particle.x < 0) particle.x = this.width;
-          if (particle.x > this.width) particle.x = 0;
-          if (particle.y < 0) particle.y = this.height;
-          if (particle.y > this.height) particle.y = 0;
-          
-          // Draw particle
-          this.ctx.beginPath();
-          this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-          
-          // Different fill styles based on theme
-          switch (this.theme) {
-            case 'forest':
-              this.ctx.fillStyle = `hsla(${particle.life % 360}, 80%, 50%, 0.6)`;
-              break;
-            case 'liquid':
-              this.ctx.fillStyle = `hsla(${(particle.x / this.width) * 60 + 200}, 100%, 60%, 0.7)`;
-              break;
-            default: // nebula
-              this.ctx.fillStyle = particle.color;
-          }
-          
-          this.ctx.fill();
-          
-          // Update life
-          particle.life += 0.1;
-        });
-      }
-      
-      renderFractal(deltaTime) {
-        // Draw connections between points
-        this.ctx.strokeStyle = this.params.color;
-        this.ctx.lineWidth = 1;
-        
-        for (let i = 0; i < this.fractalPoints.length; i++) {
-          const p1 = this.fractalPoints[i];
-          
-          // Connect to a few random other points
-          for (let j = 0; j < 3; j++) {
-            const p2 = this.fractalPoints[Math.floor(Math.random() * this.fractalPoints.length)];
-            
-            // Different line styles based on theme
-            switch (this.theme) {
-              case 'forest':
-                const dist = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
-                const alpha = 1 - Math.min(dist / 300, 0.9);
-                this.ctx.strokeStyle = `rgba(100, 255, 150, ${alpha})`;
-                this.ctx.lineWidth = 0.5 + Math.random();
-                break;
-              case 'liquid':
-                this.ctx.strokeStyle = `hsla(${(i % 360)}, 100%, 60%, 0.3)`;
-                this.ctx.lineWidth = 0.3;
-                break;
-              default: // nebula
-                this.ctx.strokeStyle = this.params.color;
-                this.ctx.lineWidth = 0.5;
-            }
-            
-            this.ctx.beginPath();
-            this.ctx.moveTo(p1.x, p1.y);
-            this.ctx.lineTo(p2.x, p2.y);
-            this.ctx.stroke();
-          }
-        }
-        
-        // Move points slightly
-        this.fractalPoints.forEach(point => {
-          point.x += (Math.random() - 0.5) * this.params.speed;
-          point.y += (Math.random() - 0.5) * this.params.speed;
-          
-          // Keep within bounds
-          point.x = Math.max(0, Math.min(this.width, point.x));
-          point.y = Math.max(0, Math.min(this.height, point.y));
-        });
-        
-        // Occasionally add new points
-        if (Math.random() < 0.05 * this.params.speed) {
-          const p1 = this.fractalPoints[Math.floor(Math.random() * this.fractalPoints.length)];
-          const p2 = this.fractalPoints[Math.floor(Math.random() * this.fractalPoints.length)];
-          
-          this.fractalPoints.push({
-            x: (p1.x + p2.x) / 2 + (Math.random() - 0.5) * 20,
-            y: (p1.y + p2.y) / 2 + (Math.random() - 0.5) * 20
-          });
-        }
-      }
-      
-      renderInkDrops(deltaTime) {
-        this.inkDrops.forEach(drop => {
-          // Grow drop
-          drop.radius += drop.growthRate;
-          
-          // Reset if reached max size
-          if (drop.radius >= drop.maxRadius) {
-            drop.radius = 1;
-            drop.x = Math.random() * this.width;
-            drop.y = Math.random() * this.height;
-          }
-          
-          // Draw drop
-          this.ctx.beginPath();
-          this.ctx.arc(drop.x, drop.y, drop.radius, 0, Math.PI * 2);
-          
-          // Different fill styles based on theme
-          switch (this.theme) {
-            case 'forest':
-              const gradient = this.ctx.createRadialGradient(
-                drop.x, drop.y, 0,
-                drop.x, drop.y, drop.radius
-              );
-              gradient.addColorStop(0, `hsla(${(drop.x / this.width) * 60 + 150}, 80%, 40%, ${drop.alpha})`);
-              gradient.addColorStop(1, 'hsla(150, 80%, 20%, 0)');
-              this.ctx.fillStyle = gradient;
-              break;
-            case 'liquid':
-              this.ctx.fillStyle = `hsla(${(drop.y / this.height) * 60 + 200}, 100%, 50%, ${drop.alpha * 0.5})`;
-              break;
-            default: // nebula
-              const nebulaGradient = this.ctx.createRadialGradient(
-                drop.x, drop.y, 0,
-                drop.x, drop.y, drop.radius
-              );
-              nebulaGradient.addColorStop(0, drop.color);
-              nebulaGradient.addColorStop(1, 'rgba(0,0,0,0)');
-              this.ctx.fillStyle = nebulaGradient;
-          }
-          
-          this.ctx.fill();
-        });
-      }
-      
-      setTheme(theme) {
-        this.theme = theme;
-      }
-      
-      pause() {
-        this.paused = true;
-        cancelAnimationFrame(this.animationId);
-      }
-      
-      resume() {
-        this.paused = false;
-        this.lastTime = 0;
-        this.animate();
-      }
-      
-      stop() {
-        cancelAnimationFrame(this.animationId);
-        this.ctx.clearRect(0, 0, this.width, this.height);
-        this.particles = [];
-        this.inkDrops = [];
-        this.fractalPoints = [];
-        this.flowField = [];
-      }
-      
-      resize() {
-        this.width = this.canvas.width = window.innerWidth;
-        this.height = this.canvas.height = window.innerHeight;
-        
-        // Reinitialize if we're in the middle of a session
-        if (this.params.type) {
-          switch (this.params.type) {
-            case 'particles':
-              this.initParticles();
-              break;
-            case 'flow':
-              this.initFlowField();
-              break;
-            case 'fractal':
-              this.initFractal();
-              break;
-            case 'ink':
-              this.initInk();
-              break;
-          }
-        }
       }
     }
     
