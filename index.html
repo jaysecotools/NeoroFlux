@@ -645,8 +645,8 @@
   </div>
 
   <script>
-    // Enhanced Audio Engine with 8D and precise binaurals
-    class AdvancedAudioEngine {
+    // Enhanced Audio Engine with clean 8D and binaural integration
+    class CleanAudioEngine {
       constructor() {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         this.oscillators = [];
@@ -656,80 +656,86 @@
         this.analyser.fftSize = 32;
         this.binauralType = 'theta';
         this.soundscape = null;
-        this.soundscapeBuffer = null;
         this.isPlaying = false;
         this.lastPanUpdate = 0;
-        this.panDirection = 1;
-        this.panSpeed = 0.0005;
         
-        // Setup audio graph
+        // Smoother 8D effect with stereo imaging
         this.merger = this.audioContext.createChannelMerger(2);
+        this.splitter = this.audioContext.createChannelSplitter(2);
         this.merger.connect(this.analyser);
         this.analyser.connect(this.audioContext.destination);
         
-        // Preload soundscapes
+        // Preload soundscapes with better quality
         this.soundscapeBuffers = {};
-        this.loadSoundscapes();
+        this.loadCleanSoundscapes();
       }
       
-      async loadSoundscapes() {
-        // Create procedural soundscapes
+      async loadCleanSoundscapes() {
         const sampleRate = this.audioContext.sampleRate;
         const bufferLength = 10 * sampleRate; // 10 second loops
         
-        // Cosmic Journey (ethereal pads with slow modulation)
+        // Improved Cosmic Journey (smoother pads)
         const cosmicBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
         const cosmicLeft = cosmicBuffer.getChannelData(0);
         const cosmicRight = cosmicBuffer.getChannelData(1);
         for (let i = 0; i < bufferLength; i++) {
           const t = i / sampleRate;
-          cosmicLeft[i] = Math.sin(t * 110) * 0.2 * Math.sin(t * 0.3) +
-                         Math.sin(t * 220.5) * 0.1 * Math.sin(t * 0.35);
-          cosmicRight[i] = Math.sin(t * 111.7) * 0.2 * Math.sin(t * 0.31) +
-                          Math.sin(t * 221.3) * 0.1 * Math.sin(t * 0.36);
+          // Smoother oscillator with less high-frequency content
+          cosmicLeft[i] = Math.sin(t * 110) * 0.15 * Math.sin(t * 0.3) +
+                         Math.sin(t * 220.5) * 0.07 * Math.sin(t * 0.35);
+          cosmicRight[i] = Math.sin(t * 111.7) * 0.15 * Math.sin(t * 0.31) +
+                          Math.sin(t * 221.3) * 0.07 * Math.sin(t * 0.36);
+          // Apply gentle low-pass effect
+          cosmicLeft[i] *= 0.5 + 0.5 * Math.sin(t * 0.5);
+          cosmicRight[i] *= 0.5 + 0.5 * Math.sin(t * 0.51);
         }
         this.soundscapeBuffers.cosmic = cosmicBuffer;
         
-        // Enchanted Forest (nature sounds with wind)
+        // Improved Enchanted Forest (less abrupt transients)
         const forestBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
         const forestLeft = forestBuffer.getChannelData(0);
         const forestRight = forestBuffer.getChannelData(1);
         let windPhase = 0;
         for (let i = 0; i < bufferLength; i++) {
           const t = i / sampleRate;
-          // Wind
-          windPhase += 0.0001 * (1 + Math.sin(t * 0.2));
-          const wind = Math.random() * 0.1 * Math.sin(windPhase);
+          // Smoother wind
+          windPhase += 0.0001;
+          const wind = (Math.random() * 0.05 + 0.05) * Math.sin(windPhase);
           
-          // Birds and leaves
-          const birdChirp = Math.random() > 0.995 ? (Math.random() * 0.3) : 0;
-          const leafRustle = Math.random() > 0.99 ? (Math.random() * 0.2) : 0;
+          // Softer bird chirps
+          const birdChirp = Math.random() > 0.997 ? 
+            (Math.random() * 0.2 * Math.sin(t * 4000 * Math.random())) : 0;
           
-          forestLeft[i] = wind * 0.7 + birdChirp * 0.3 + leafRustle * 0.5;
-          forestRight[i] = wind * 0.3 + birdChirp * 0.7 + leafRustle * 0.5;
+          // Smoother leaf rustles
+          const leafRustle = Math.random() > 0.995 ? 
+            (Math.random() * 0.15 * Math.sin(t * 200 * Math.random())) : 0;
+          
+          forestLeft[i] = wind * 0.7 + birdChirp * 0.3 + leafRustle * 0.4;
+          forestRight[i] = wind * 0.3 + birdChirp * 0.7 + leafRustle * 0.6;
         }
         this.soundscapeBuffers.forest = forestBuffer;
         
-        // Ocean Depth (deep waves with bubbles)
+        // Improved Ocean Depth (smoother waves)
         const oceanBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
         const oceanLeft = oceanBuffer.getChannelData(0);
         const oceanRight = oceanBuffer.getChannelData(1);
         let wavePhase = 0;
         for (let i = 0; i < bufferLength; i++) {
           const t = i / sampleRate;
-          // Waves
-          wavePhase += 0.0005;
-          const wave = Math.sin(wavePhase) * 0.3 * Math.sin(t * 0.5);
+          // Smoother waves with less high-end
+          wavePhase += 0.0003;
+          const wave = Math.sin(wavePhase) * 0.25 * (0.5 + 0.5 * Math.sin(t * 0.2));
           
-          // Bubbles
-          const bubble = Math.random() > 0.99 ? (Math.random() * 0.2) : 0;
+          // Softer bubbles
+          const bubble = Math.random() > 0.995 ? 
+            (Math.random() * 0.15 * Math.sin(t * 500 * Math.random())) : 0;
           
-          oceanLeft[i] = wave * 0.6 + bubble * 0.4;
-          oceanRight[i] = wave * 0.4 + bubble * 0.6;
+          oceanLeft[i] = wave * 0.6 + bubble * 0.3;
+          oceanRight[i] = wave * 0.4 + bubble * 0.7;
         }
         this.soundscapeBuffers.ocean = oceanBuffer;
         
-        // Sacred Temple (singing bowls with harmonics)
+        // Improved Sacred Temple (smoother decays)
         const templeBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
         const templeLeft = templeBuffer.getChannelData(0);
         const templeRight = templeBuffer.getChannelData(1);
@@ -737,18 +743,18 @@
         let decay = 0;
         for (let i = 0; i < bufferLength; i++) {
           const t = i / sampleRate;
-          if (Math.random() > 0.999) {
+          if (Math.random() > 0.9995) {
             bowlPhase = 0;
             decay = 1.0;
           }
           
           if (decay > 0) {
-            bowlPhase += 0.0005;
-            decay *= 0.9999;
+            bowlPhase += 0.0003;
+            decay *= 0.99995; // Slower decay
             const bowl = decay * (
-              Math.sin(bowlPhase * 110) * 0.5 +
-              Math.sin(bowlPhase * 220.5) * 0.25 +
-              Math.sin(bowlPhase * 330.7) * 0.125
+              Math.sin(bowlPhase * 110) * 0.4 +
+              Math.sin(bowlPhase * 220.5) * 0.2 +
+              Math.sin(bowlPhase * 330.7) * 0.1
             );
             
             templeLeft[i] = bowl * 0.6;
@@ -770,7 +776,7 @@
         const leftFreq = carrierFreq;
         const rightFreq = carrierFreq + beatFreq;
         
-        // Create oscillators
+        // Create oscillators with smoother waveforms
         const leftOsc = this.audioContext.createOscillator();
         leftOsc.type = 'sine';
         leftOsc.frequency.value = leftFreq;
@@ -779,21 +785,21 @@
         rightOsc.type = 'sine';
         rightOsc.frequency.value = rightFreq;
         
-        // Create gain nodes
+        // Create gain nodes with compression to prevent clipping
         const leftGain = this.audioContext.createGain();
-        leftGain.gain.value = 0.1;
+        leftGain.gain.value = 0.08; // Lower volume to prevent distortion
         
         const rightGain = this.audioContext.createGain();
-        rightGain.gain.value = 0.1;
+        rightGain.gain.value = 0.08;
         
-        // Create panners for 8D effect
+        // Create panners with smoother movement
         const leftPanner = this.audioContext.createStereoPanner();
-        leftPanner.pan.value = -1;
+        leftPanner.pan.value = -0.8;
         
         const rightPanner = this.audioContext.createStereoPanner();
-        rightPanner.pan.value = 1;
+        rightPanner.pan.value = 0.8;
         
-        // Connect nodes
+        // Connect nodes with splitter for cleaner stereo imaging
         leftOsc.connect(leftGain).connect(leftPanner).connect(this.merger, 0, 0);
         rightOsc.connect(rightGain).connect(rightPanner).connect(this.merger, 0, 1);
         
@@ -809,7 +815,7 @@
         this.isPlaying = true;
         this.lastPanUpdate = performance.now();
         
-        // Start 8D panning effect
+        // Start smoother 8D panning effect
         this.updatePanning();
       }
       
@@ -841,12 +847,23 @@
           this.soundscape.stop();
         }
         
+        // Create buffer source with smoother playback
         const source = this.audioContext.createBufferSource();
         source.buffer = buffer;
         source.loop = true;
-        source.connect(this.merger);
-        source.start();
         
+        // Add gentle lowpass filter to reduce harshness
+        const filter = this.audioContext.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 5000;
+        source.connect(filter);
+        
+        // Connect to merger with reduced volume
+        const gainNode = this.audioContext.createGain();
+        gainNode.gain.value = 0.3; // Lower volume to blend with binaurals
+        filter.connect(gainNode).connect(this.merger);
+        
+        source.start();
         this.soundscape = source;
       }
       
@@ -857,22 +874,17 @@
         const deltaTime = now - this.lastPanUpdate;
         this.lastPanUpdate = now;
         
-        // Update pan positions with smooth movement
-        const panIncrement = this.panSpeed * deltaTime * this.panDirection;
+        // Smoother, more natural 8D movement
+        const leftPan = Math.sin(now * 0.0005) * 0.8;
+        const rightPan = Math.cos(now * 0.0006) * 0.8;
         
-        this.panners[0].pan.value = Math.sin(now * 0.001) * 0.8;
-        this.panners[1].pan.value = Math.sin(now * 0.001 + Math.PI/2) * 0.8;
+        // Apply with smoothing to prevent clicks
+        this.panners[0].pan.setTargetAtTime(leftPan, this.audioContext.currentTime, 0.1);
+        this.panners[1].pan.setTargetAtTime(rightPan, this.audioContext.currentTime, 0.1);
         
-        // More complex 8D movement
-        const leftPan = Math.sin(now * 0.0007) * 0.9;
-        const rightPan = Math.cos(now * 0.0008) * 0.9;
-        
-        this.panners[0].pan.value = leftPan;
-        this.panners[1].pan.value = rightPan;
-        
-        // Apply volume modulation based on pan position
-        this.gainNodes[0].gain.value = 0.1 * (1 - leftPan * 0.5);
-        this.gainNodes[1].gain.value = 0.1 * (1 - rightPan * 0.5);
+        // Gentle volume modulation (less extreme than before)
+        this.gainNodes[0].gain.setTargetAtTime(0.08 * (0.8 + leftPan * 0.2), this.audioContext.currentTime, 0.2);
+        this.gainNodes[1].gain.setTargetAtTime(0.08 * (0.8 + rightPan * 0.2), this.audioContext.currentTime, 0.2);
         
         requestAnimationFrame(() => this.updatePanning());
       }
@@ -885,20 +897,38 @@
       }
       
       stop() {
-        this.oscillators.forEach(osc => osc.stop());
-        this.oscillators = [];
-        this.gainNodes = [];
-        this.panners = [];
-        
-        if (this.soundscape) {
-          this.soundscape.stop();
-          this.soundscape = null;
+        // Smooth fade out to prevent clicks
+        if (this.isPlaying) {
+          const fadeTime = 0.1;
+          const now = this.audioContext.currentTime;
+          
+          this.gainNodes[0].gain.exponentialRampToValueAtTime(0.001, now + fadeTime);
+          this.gainNodes[1].gain.exponentialRampToValueAtTime(0.001, now + fadeTime);
+          
+          if (this.soundscape) {
+            const soundscapeGain = this.soundscape.context.createGain();
+            this.soundscape.disconnect();
+            this.soundscape.connect(soundscapeGain).connect(this.merger);
+            soundscapeGain.gain.exponentialRampToValueAtTime(0.001, now + fadeTime);
+          }
+          
+          setTimeout(() => {
+            this.oscillators.forEach(osc => osc.stop());
+            this.oscillators = [];
+            this.gainNodes = [];
+            this.panners = [];
+            
+            if (this.soundscape) {
+              this.soundscape.stop();
+              this.soundscape = null;
+            }
+            
+            this.isPlaying = false;
+          }, fadeTime * 1000);
         }
-        
-        this.isPlaying = false;
       }
     }
-    
+
     // Enhanced Visual Engine with full-screen effects
     class AdvancedVisualEngine {
       constructor(canvas) {
@@ -1226,7 +1256,7 @@
       }
       
       initAudioEngine() {
-        this.state.audioEngine = new AdvancedAudioEngine();
+        this.state.audioEngine = new CleanAudioEngine();
       }
       
       initVisualEngine() {
