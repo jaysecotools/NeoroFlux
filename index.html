@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -433,6 +434,16 @@
       cursor: pointer;
     }
     
+    /* Sound preview button */
+    .preview-btn {
+      background: transparent;
+      border: none;
+      color: var(--info);
+      cursor: pointer;
+      margin-left: 0.5rem;
+      font-size: 0.8rem;
+    }
+    
     @media (max-width: 768px) {
       .wheel-container {
         width: 200px;
@@ -525,6 +536,7 @@
             <div class="control-group">
               <label for="binaural-type">Binaural Type</label>
               <select id="binaural-type">
+                <option value="none">None (Nature Sounds Only)</option>
                 <option value="theta">Theta (4-8Hz) - Deep Relaxation</option>
                 <option value="alpha">Alpha (8-12Hz) - Calm Focus</option>
                 <option value="beta">Beta (12-30Hz) - Active Mind</option>
@@ -534,14 +546,23 @@
             </div>
             
             <div class="control-group">
-              <label for="soundscape">8D Soundscape</label>
+              <label for="soundscape">Soundscapes</label>
               <select id="soundscape">
-                <option value="none">None</option>
-                <option value="cosmic">Cosmic Journey</option>
-                <option value="forest">Enchanted Forest</option>
-                <option value="ocean">Ocean Depth</option>
-                <option value="temple">Sacred Temple</option>
+                <optgroup label="Nature">
+                  <option value="none">None</option>
+                  <option value="forest">Enchanted Forest</option>
+                  <option value="rainforest">Rainforest</option>
+                  <option value="stream">Mountain Stream</option>
+                  <option value="thunder">Thunderstorm</option>
+                </optgroup>
+                <optgroup label="Ambient">
+                  <option value="cosmic">Cosmic Journey</option>
+                  <option value="temple">Sacred Temple</option>
+                  <option value="white">White Noise</option>
+                  <option value="pink">Pink Noise</option>
+                </optgroup>
               </select>
+              <button class="preview-btn" id="preview-sound">▶ Preview</button>
             </div>
           </div>
           
@@ -656,6 +677,7 @@
         this.analyser.fftSize = 32;
         this.binauralType = 'theta';
         this.soundscape = null;
+        this.previewSoundscape = null;
         this.isPlaying = false;
         this.lastPanUpdate = 0;
         
@@ -680,12 +702,10 @@
         const cosmicRight = cosmicBuffer.getChannelData(1);
         for (let i = 0; i < bufferLength; i++) {
           const t = i / sampleRate;
-          // Smoother oscillator with less high-frequency content
           cosmicLeft[i] = Math.sin(t * 110) * 0.15 * Math.sin(t * 0.3) +
                          Math.sin(t * 220.5) * 0.07 * Math.sin(t * 0.35);
           cosmicRight[i] = Math.sin(t * 111.7) * 0.15 * Math.sin(t * 0.31) +
                           Math.sin(t * 221.3) * 0.07 * Math.sin(t * 0.36);
-          // Apply gentle low-pass effect
           cosmicLeft[i] *= 0.5 + 0.5 * Math.sin(t * 0.5);
           cosmicRight[i] *= 0.5 + 0.5 * Math.sin(t * 0.51);
         }
@@ -698,44 +718,81 @@
         let windPhase = 0;
         for (let i = 0; i < bufferLength; i++) {
           const t = i / sampleRate;
-          // Smoother wind
           windPhase += 0.0001;
           const wind = (Math.random() * 0.05 + 0.05) * Math.sin(windPhase);
-          
-          // Softer bird chirps
           const birdChirp = Math.random() > 0.997 ? 
             (Math.random() * 0.2 * Math.sin(t * 4000 * Math.random())) : 0;
-          
-          // Smoother leaf rustles
           const leafRustle = Math.random() > 0.995 ? 
             (Math.random() * 0.15 * Math.sin(t * 200 * Math.random())) : 0;
-          
           forestLeft[i] = wind * 0.7 + birdChirp * 0.3 + leafRustle * 0.4;
           forestRight[i] = wind * 0.3 + birdChirp * 0.7 + leafRustle * 0.6;
         }
         this.soundscapeBuffers.forest = forestBuffer;
         
-        // Improved Ocean Depth (smoother waves)
-        const oceanBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
-        const oceanLeft = oceanBuffer.getChannelData(0);
-        const oceanRight = oceanBuffer.getChannelData(1);
-        let wavePhase = 0;
+        // Rainforest (more dense nature sounds)
+        const rainforestBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
+        const rainforestLeft = rainforestBuffer.getChannelData(0);
+        const rainforestRight = rainforestBuffer.getChannelData(1);
+        let rainPhase = 0;
         for (let i = 0; i < bufferLength; i++) {
           const t = i / sampleRate;
-          // Smoother waves with less high-end
-          wavePhase += 0.0003;
-          const wave = Math.sin(wavePhase) * 0.25 * (0.5 + 0.5 * Math.sin(t * 0.2));
-          
-          // Softer bubbles
-          const bubble = Math.random() > 0.995 ? 
-            (Math.random() * 0.15 * Math.sin(t * 500 * Math.random())) : 0;
-          
-          oceanLeft[i] = wave * 0.6 + bubble * 0.3;
-          oceanRight[i] = wave * 0.4 + bubble * 0.7;
+          rainPhase += 0.0002;
+          const rain = Math.sin(rainPhase) * 0.3 * (0.5 + 0.5 * Math.sin(t * 0.3));
+          const bird = Math.random() > 0.998 ? (Math.random() * 0.25 * Math.sin(t * 3000 * Math.random())) : 0;
+          const frog = Math.random() > 0.999 ? (Math.random() * 0.2 * Math.sin(t * 800 * Math.random())) : 0;
+          rainforestLeft[i] = rain * 0.6 + bird * 0.4 + frog * 0.3;
+          rainforestRight[i] = rain * 0.4 + bird * 0.6 + frog * 0.7;
         }
-        this.soundscapeBuffers.ocean = oceanBuffer;
+        this.soundscapeBuffers.rainforest = rainforestBuffer;
         
-        // Improved Sacred Temple (smoother decays)
+        // Mountain Stream
+        const streamBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
+        const streamLeft = streamBuffer.getChannelData(0);
+        const streamRight = streamBuffer.getChannelData(1);
+        let waterPhase = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          const t = i / sampleRate;
+          waterPhase += 0.0005;
+          const water = Math.sin(waterPhase) * 0.4 * (0.5 + 0.5 * Math.sin(t * 0.2));
+          const bubble = Math.random() > 0.997 ? (Math.random() * 0.15 * Math.sin(t * 500 * Math.random())) : 0;
+          streamLeft[i] = water * 0.7 + bubble * 0.3;
+          streamRight[i] = water * 0.3 + bubble * 0.7;
+        }
+        this.soundscapeBuffers.stream = streamBuffer;
+        
+        // Thunderstorm
+        const thunderBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
+        const thunderLeft = thunderBuffer.getChannelData(0);
+        const thunderRight = thunderBuffer.getChannelData(1);
+        let stormPhase = 0;
+        let thunderActive = false;
+        let thunderCountdown = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          const t = i / sampleRate;
+          stormPhase += 0.0003;
+          
+          // Rain
+          const rain = Math.sin(stormPhase) * 0.4 * (0.5 + 0.5 * Math.sin(t * 0.1));
+          
+          // Thunder
+          if (thunderCountdown <= 0 && Math.random() > 0.999) {
+            thunderActive = true;
+            thunderCountdown = Math.floor(Math.random() * 5000) + 3000;
+          }
+          
+          let thunder = 0;
+          if (thunderActive) {
+            thunder = Math.random() * 0.5 * Math.sin(t * 100 * Math.random());
+            thunderCountdown--;
+            if (thunderCountdown <= 0) thunderActive = false;
+          }
+          
+          thunderLeft[i] = rain * 0.6 + thunder * 0.4;
+          thunderRight[i] = rain * 0.4 + thunder * 0.6;
+        }
+        this.soundscapeBuffers.thunder = thunderBuffer;
+        
+        // Sacred Temple (smoother decays)
         const templeBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
         const templeLeft = templeBuffer.getChannelData(0);
         const templeRight = templeBuffer.getChannelData(1);
@@ -750,7 +807,7 @@
           
           if (decay > 0) {
             bowlPhase += 0.0003;
-            decay *= 0.99995; // Slower decay
+            decay *= 0.99995;
             const bowl = decay * (
               Math.sin(bowlPhase * 110) * 0.4 +
               Math.sin(bowlPhase * 220.5) * 0.2 +
@@ -765,18 +822,41 @@
           }
         }
         this.soundscapeBuffers.temple = templeBuffer;
+        
+        // White Noise
+        const whiteBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
+        const whiteLeft = whiteBuffer.getChannelData(0);
+        const whiteRight = whiteBuffer.getChannelData(1);
+        for (let i = 0; i < bufferLength; i++) {
+          whiteLeft[i] = (Math.random() * 2 - 1) * 0.2;
+          whiteRight[i] = (Math.random() * 2 - 1) * 0.2;
+        }
+        this.soundscapeBuffers.white = whiteBuffer;
+        
+        // Pink Noise (more bass-heavy)
+        const pinkBuffer = this.audioContext.createBuffer(2, bufferLength, sampleRate);
+        const pinkLeft = pinkBuffer.getChannelData(0);
+        const pinkRight = pinkBuffer.getChannelData(1);
+        let pinkFilter = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          const white = (Math.random() * 2 - 1) * 0.1;
+          pinkFilter = 0.997 * pinkFilter + 0.03 * white;
+          pinkLeft[i] = pinkFilter;
+          pinkRight[i] = pinkFilter * 0.9;
+        }
+        this.soundscapeBuffers.pink = pinkBuffer;
       }
       
       startBinauralBeats(type) {
         this.stop();
         this.binauralType = type;
         
-        // Set frequencies based on brainwave type
+        if (type === 'none') return;
+        
         const { carrierFreq, beatFreq } = this.getFrequenciesForType(type);
         const leftFreq = carrierFreq;
         const rightFreq = carrierFreq + beatFreq;
         
-        // Create oscillators with smoother waveforms
         const leftOsc = this.audioContext.createOscillator();
         leftOsc.type = 'sine';
         leftOsc.frequency.value = leftFreq;
@@ -785,49 +865,41 @@
         rightOsc.type = 'sine';
         rightOsc.frequency.value = rightFreq;
         
-        // Create gain nodes with compression to prevent clipping
         const leftGain = this.audioContext.createGain();
-        leftGain.gain.value = 0.08; // Lower volume to prevent distortion
+        leftGain.gain.value = 0.08;
         
         const rightGain = this.audioContext.createGain();
         rightGain.gain.value = 0.08;
         
-        // Create panners with smoother movement
         const leftPanner = this.audioContext.createStereoPanner();
         leftPanner.pan.value = -0.8;
         
         const rightPanner = this.audioContext.createStereoPanner();
         rightPanner.pan.value = 0.8;
         
-        // Connect nodes with splitter for cleaner stereo imaging
         leftOsc.connect(leftGain).connect(leftPanner).connect(this.merger, 0, 0);
         rightOsc.connect(rightGain).connect(rightPanner).connect(this.merger, 0, 1);
         
-        // Start oscillators
         leftOsc.start();
         rightOsc.start();
         
-        // Save references
         this.oscillators = [leftOsc, rightOsc];
         this.gainNodes = [leftGain, rightGain];
         this.panners = [leftPanner, rightPanner];
         
         this.isPlaying = true;
         this.lastPanUpdate = performance.now();
-        
-        // Start smoother 8D panning effect
         this.updatePanning();
       }
       
       getFrequenciesForType(type) {
         const types = {
-          theta: { carrierFreq: 150, beatFreq: 6 },  // 4-8Hz
-          alpha: { carrierFreq: 200, beatFreq: 10 }, // 8-12Hz
-          beta: { carrierFreq: 250, beatFreq: 18 },  // 12-30Hz
-          gamma: { carrierFreq: 300, beatFreq: 40 }, // 30-100Hz
-          delta: { carrierFreq: 120, beatFreq: 2 }   // 0.5-4Hz
+          theta: { carrierFreq: 150, beatFreq: 6 },
+          alpha: { carrierFreq: 200, beatFreq: 10 },
+          beta: { carrierFreq: 250, beatFreq: 18 },
+          gamma: { carrierFreq: 300, beatFreq: 40 },
+          delta: { carrierFreq: 120, beatFreq: 2 }
         };
-        
         return types[type] || types.theta;
       }
       
@@ -847,42 +919,62 @@
           this.soundscape.stop();
         }
         
-        // Create buffer source with smoother playback
         const source = this.audioContext.createBufferSource();
         source.buffer = buffer;
         source.loop = true;
         
-        // Add gentle lowpass filter to reduce harshness
         const filter = this.audioContext.createBiquadFilter();
         filter.type = 'lowpass';
-        filter.frequency.value = 5000;
+        filter.frequency.value = type === 'pink' ? 4000 : 5000;
         source.connect(filter);
         
-        // Connect to merger with reduced volume
         const gainNode = this.audioContext.createGain();
-        gainNode.gain.value = 0.3; // Lower volume to blend with binaurals
+        gainNode.gain.value = type === 'pink' || type === 'white' ? 0.15 : 0.3;
         filter.connect(gainNode).connect(this.merger);
         
         source.start();
         this.soundscape = source;
       }
       
+      previewSoundscape(type) {
+        if (type === 'none') return;
+        
+        if (this.previewSoundscape) {
+          this.previewSoundscape.stop();
+        }
+        
+        const buffer = this.soundscapeBuffers[type];
+        if (!buffer) return;
+        
+        const source = this.audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.loop = false;
+        
+        const gainNode = this.audioContext.createGain();
+        gainNode.gain.value = 0.5;
+        source.connect(gainNode).connect(this.audioContext.destination);
+        
+        source.start();
+        this.previewSoundscape = source;
+        
+        // Auto-stop after 5 seconds
+        setTimeout(() => {
+          if (this.previewSoundscape === source) {
+            source.stop();
+          }
+        }, 5000);
+      }
+      
       updatePanning() {
         if (!this.isPlaying) return;
         
         const now = performance.now();
-        const deltaTime = now - this.lastPanUpdate;
-        this.lastPanUpdate = now;
-        
-        // Smoother, more natural 8D movement
         const leftPan = Math.sin(now * 0.0005) * 0.8;
         const rightPan = Math.cos(now * 0.0006) * 0.8;
         
-        // Apply with smoothing to prevent clicks
         this.panners[0].pan.setTargetAtTime(leftPan, this.audioContext.currentTime, 0.1);
         this.panners[1].pan.setTargetAtTime(rightPan, this.audioContext.currentTime, 0.1);
         
-        // Gentle volume modulation (less extreme than before)
         this.gainNodes[0].gain.setTargetAtTime(0.08 * (0.8 + leftPan * 0.2), this.audioContext.currentTime, 0.2);
         this.gainNodes[1].gain.setTargetAtTime(0.08 * (0.8 + rightPan * 0.2), this.audioContext.currentTime, 0.2);
         
@@ -897,7 +989,6 @@
       }
       
       stop() {
-        // Smooth fade out to prevent clicks
         if (this.isPlaying) {
           const fadeTime = 0.1;
           const now = this.audioContext.currentTime;
@@ -925,6 +1016,11 @@
             
             this.isPlaying = false;
           }, fadeTime * 1000);
+        }
+        
+        if (this.previewSoundscape) {
+          this.previewSoundscape.stop();
+          this.previewSoundscape = null;
         }
       }
     }
@@ -1039,7 +1135,6 @@
       }
       
       clearCanvas() {
-        // Theme-based clearing
         switch (this.theme) {
           case 'fluid':
             this.ctx.fillStyle = 'rgba(5, 10, 20, 0.1)';
@@ -1050,7 +1145,7 @@
           case 'fractal':
             this.ctx.fillStyle = 'rgba(10, 5, 20, 0.2)';
             break;
-          default: // nebula
+          default:
             this.ctx.fillStyle = 'rgba(0, 5, 15, 0.1)';
         }
         
@@ -1058,15 +1153,12 @@
       }
       
       updateParticles(deltaTime) {
-        // Update based on audio data
         const audioScale = this.audioData ? (this.audioData[3] / 255) * 2 : 1;
         
         this.particles.forEach(particle => {
-          // Move particle
           particle.x += particle.speedX * audioScale;
           particle.y += particle.speedY * audioScale;
           
-          // Apply theme-specific behavior
           switch (particle.type) {
             case 'fluid':
               particle.size = 5 + Math.sin(particle.life * 0.05) * 5;
@@ -1086,13 +1178,11 @@
               break;
           }
           
-          // Wrap around edges
           if (particle.x < 0) particle.x = this.width;
           if (particle.x > this.width) particle.x = 0;
           if (particle.y < 0) particle.y = this.height;
           if (particle.y > this.height) particle.y = 0;
           
-          // Random regeneration
           if (Math.random() < 0.002 * this.intensity) {
             const newParticle = this.createParticle();
             particle.x = newParticle.x;
@@ -1105,7 +1195,6 @@
         this.particles.forEach(particle => {
           this.ctx.beginPath();
           
-          // Different rendering based on type
           switch (particle.type) {
             case 'fluid':
               const gradient = this.ctx.createRadialGradient(
@@ -1122,12 +1211,11 @@
               this.ctx.fillStyle = particle.color;
               this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
               
-              // Draw connection lines to nearby particles
               if (Math.random() < 0.3) {
                 const closeParticles = this.particles.filter(p => {
                   const dx = p.x - particle.x;
                   const dy = p.y - particle.y;
-                  return (dx * dx + dy * dy) < 10000; // 100px distance
+                  return (dx * dx + dy * dy) < 10000;
                 });
                 
                 closeParticles.forEach(p => {
@@ -1145,7 +1233,6 @@
               this.ctx.strokeStyle = particle.color;
               this.ctx.lineWidth = particle.size;
               
-              // Draw connections to other particles
               const connections = Math.floor(3 * this.intensity / 5);
               for (let i = 0; i < connections; i++) {
                 const randomParticle = this.particles[Math.floor(Math.random() * this.particles.length)];
@@ -1155,7 +1242,7 @@
               this.ctx.stroke();
               break;
               
-            default: // standard
+            default:
               this.ctx.fillStyle = particle.color;
               this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
           }
@@ -1177,7 +1264,6 @@
     // Main App Class
     class NeuroFlux {
       constructor() {
-        // DOM Elements
         this.elements = {
           app: document.getElementById('app'),
           wheel: document.getElementById('wheel'),
@@ -1191,6 +1277,7 @@
           sessionTimer: document.getElementById('session-timer'),
           binauralType: document.getElementById('binaural-type'),
           soundscape: document.getElementById('soundscape'),
+          previewSoundBtn: document.getElementById('preview-sound'),
           visualTheme: document.getElementById('visual-theme'),
           visualIntensity: document.getElementById('visual-intensity'),
           pauseBtn: document.getElementById('pause-btn'),
@@ -1215,7 +1302,6 @@
           fullscreenBtn: document.getElementById('fullscreen-btn')
         };
         
-        // App State
         this.state = {
           currentMood: null,
           currentIntensity: 5,
@@ -1235,15 +1321,20 @@
           fullscreen: false
         };
         
-        // Initialize
         this.initAudioEngine();
         this.initVisualEngine();
         this.loadData();
         this.setupEventListeners();
         this.checkReminders();
-        setInterval(() => this.checkReminders(), 60000); // Check every minute
+        setInterval(() => this.checkReminders(), 60000);
         
-        // Service Worker Registration for offline use
+        // Ensure audio starts on user interaction
+        document.addEventListener('click', () => {
+          if (this.state.audioEngine.audioContext.state === 'suspended') {
+            this.state.audioEngine.audioContext.resume();
+          }
+        }, { once: true });
+        
         if ('serviceWorker' in navigator) {
           window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js').then(registration => {
@@ -1267,20 +1358,17 @@
       }
       
       loadData() {
-        // Load journal entries
         const journalData = localStorage.getItem('neuroflux_journal');
         if (journalData) {
           this.state.journalEntries = JSON.parse(journalData);
         }
         
-        // Load session history
         const historyData = localStorage.getItem('neuroflux_history');
         if (historyData) {
           this.state.sessionHistory = JSON.parse(historyData);
           this.renderHistory();
         }
         
-        // Load settings
         const settingsData = localStorage.getItem('neuroflux_settings');
         if (settingsData) {
           const settings = JSON.parse(settingsData);
@@ -1297,7 +1385,6 @@
           }
         }
         
-        // Initialize chart
         this.renderProgressChart();
       }
       
@@ -1312,14 +1399,12 @@
       }
       
       setupEventListeners() {
-        // Mood wheel selection
         this.elements.wheelCenter.addEventListener('click', () => {
           if (this.state.currentMood) {
             this.startSession(this.state.currentMood, this.state.currentIntensity);
           }
         });
         
-        // Wheel sections
         const wheelSections = document.querySelectorAll('.wheel-section');
         wheelSections.forEach(section => {
           section.addEventListener('click', (e) => {
@@ -1329,13 +1414,11 @@
           });
         });
         
-        // Intensity slider
         this.elements.intensitySlider.addEventListener('input', (e) => {
           this.state.currentIntensity = parseInt(e.target.value);
           this.elements.intensityValue.textContent = this.state.currentIntensity;
         });
         
-        // Quick relief button
         this.elements.quickReliefBtn.addEventListener('click', () => {
           if (this.state.currentMood) {
             this.startSession(this.state.currentMood, this.state.currentIntensity, 5 * 60);
@@ -1344,7 +1427,6 @@
           }
         });
         
-        // Preset buttons
         this.elements.presetBtns.forEach(btn => {
           btn.addEventListener('click', () => {
             const preset = btn.dataset.preset;
@@ -1352,7 +1434,6 @@
           });
         });
         
-        // Audio controls
         this.elements.binauralType.addEventListener('change', () => {
           if (this.state.sessionActive) {
             this.state.audioEngine.startBinauralBeats(this.elements.binauralType.value);
@@ -1365,7 +1446,10 @@
           }
         });
         
-        // Visual controls
+        this.elements.previewSoundBtn.addEventListener('click', () => {
+          this.state.audioEngine.previewSoundscape(this.elements.soundscape.value);
+        });
+        
         this.elements.visualTheme.addEventListener('change', () => {
           if (this.state.sessionActive) {
             this.state.visualEngine.start(
@@ -1382,7 +1466,6 @@
           }
         });
         
-        // Session controls
         this.elements.pauseBtn.addEventListener('click', () => {
           if (this.state.sessionPaused) {
             this.resumeSession();
@@ -1395,7 +1478,6 @@
           this.endSession();
         });
         
-        // Journal and history
         this.elements.saveJournalBtn.addEventListener('click', () => {
           this.saveJournalEntry();
         });
@@ -1411,7 +1493,6 @@
           }
         });
         
-        // Tabs
         this.elements.tabs.forEach(tab => {
           tab.addEventListener('click', () => {
             const tabId = tab.dataset.tab;
@@ -1419,7 +1500,6 @@
           });
         });
         
-        // Biofeedback
         this.elements.biofeedbackBtn.addEventListener('click', () => {
           if (!this.state.biofeedbackActive) {
             this.startBiofeedback();
@@ -1428,17 +1508,14 @@
           }
         });
         
-        // Settings
         this.elements.saveSettingsBtn.addEventListener('click', () => {
           this.saveSettings();
         });
         
-        // Fullscreen
         this.elements.fullscreenBtn.addEventListener('click', () => {
           this.toggleFullscreen();
         });
         
-        // Window resize
         window.addEventListener('resize', () => {
           this.elements.visuals.width = window.innerWidth;
           this.elements.visuals.height = window.innerHeight;
@@ -1447,13 +1524,11 @@
           }
         });
         
-        // Start animation loop for audio visualization
         this.startAnimationLoop();
       }
       
       startAnimationLoop() {
         const update = () => {
-          // Update audio visualization
           if (this.state.audioEngine && this.state.sessionActive) {
             const audioData = this.state.audioEngine.getAudioData();
             if (audioData) {
@@ -1462,7 +1537,6 @@
                 this.elements.audioBars[i].style.height = `${height}px`;
               }
               
-              // Send audio data to visual engine
               this.state.visualEngine.updateAudioData(audioData);
             }
           }
@@ -1488,7 +1562,6 @@
       }
       
       switchTab(tabId) {
-        // Update active tab
         this.elements.tabs.forEach(tab => {
           if (tab.dataset.tab === tabId) {
             tab.classList.add('active');
@@ -1497,7 +1570,6 @@
           }
         });
         
-        // Update active content
         this.elements.tabContents.forEach(content => {
           if (content.id === `${tabId}-tab`) {
             content.classList.add('active');
@@ -1506,46 +1578,36 @@
           }
         });
         
-        // Special handling for progress tab
         if (tabId === 'progress') {
           setTimeout(() => this.renderProgressChart(), 100);
         }
       }
       
       startSession(mood, intensity, duration = null) {
-        // Default duration based on intensity (1-10 maps to 3-15 minutes)
         const minutes = duration ? duration / 60 : 3 + (intensity * 1.2);
         const sessionDuration = duration || Math.round(minutes * 60);
         
-        // Set session end time (current time + duration in seconds)
         this.state.sessionEndTime = Date.now() + (sessionDuration * 1000);
         this.state.remainingTime = sessionDuration;
         this.state.sessionActive = true;
         this.state.sessionPaused = false;
         
-        // Update UI
         this.elements.moodSelector.classList.add('hidden');
         this.elements.activeSession.classList.remove('hidden');
         this.elements.sessionTitle.textContent = `${this.capitalizeFirstLetter(mood)} Relief Session`;
         this.updateTimerDisplay();
         
-        // Start timer
         this.state.timerInterval = setInterval(() => this.updateTimer(), 1000);
         
-        // Start audio based on mood and intensity
-        const frequencies = this.getFrequenciesForMood(mood, intensity);
         this.state.audioEngine.startBinauralBeats(this.elements.binauralType.value);
         this.state.audioEngine.playSoundscape(this.elements.soundscape.value);
         
-        // Start visuals based on mood and theme
-        const visualParams = this.getVisualParamsForMood(mood, intensity);
         this.state.visualEngine.start(
           this.elements.visualTheme.value,
           'particles',
           parseInt(this.elements.visualIntensity.value)
         );
         
-        // Add quick pulse animation to quick relief button
         this.elements.quickReliefBtn.classList.add('pulse');
       }
       
@@ -1601,39 +1663,32 @@
         const presetConfig = presets[preset];
         if (!presetConfig) return;
         
-        // Set UI to match preset
         this.elements.binauralType.value = presetConfig.binauralType;
         this.elements.soundscape.value = presetConfig.soundscape;
         this.elements.visualTheme.value = presetConfig.visualTheme;
         this.elements.visualIntensity.value = presetConfig.visualIntensity;
         
-        // Set session end time
         this.state.sessionEndTime = Date.now() + (presetConfig.duration * 1000);
         this.state.remainingTime = presetConfig.duration;
         this.state.sessionActive = true;
         this.state.sessionPaused = false;
         
-        // Update UI
         this.elements.moodSelector.classList.add('hidden');
         this.elements.activeSession.classList.remove('hidden');
         this.elements.sessionTitle.textContent = `${this.capitalizeFirstLetter(presetConfig.mood)} (${this.capitalizeFirstLetter(preset)})`;
         this.updateTimerDisplay();
         
-        // Start timer
         this.state.timerInterval = setInterval(() => this.updateTimer(), 1000);
         
-        // Start audio
         this.state.audioEngine.startBinauralBeats(presetConfig.binauralType);
         this.state.audioEngine.playSoundscape(presetConfig.soundscape);
         
-        // Start visuals
         this.state.visualEngine.start(
           presetConfig.visualTheme,
           'particles',
           presetConfig.visualIntensity
         );
         
-        // Add quick pulse animation to quick relief button
         this.elements.quickReliefBtn.classList.add('pulse');
       }
       
@@ -1650,12 +1705,10 @@
       resumeSession() {
         if (!this.state.sessionActive || !this.state.sessionPaused) return;
         
-        // Update end time based on remaining time
         this.state.sessionEndTime = Date.now() + (this.state.remainingTime * 1000);
         this.state.timerInterval = setInterval(() => this.updateTimer(), 1000);
         this.state.sessionPaused = false;
         
-        // Restart audio and visuals
         this.state.audioEngine.startBinauralBeats(this.elements.binauralType.value);
         this.state.audioEngine.playSoundscape(this.elements.soundscape.value);
         this.state.visualEngine.start(
@@ -1674,20 +1727,15 @@
         this.state.sessionActive = false;
         this.state.sessionPaused = false;
         
-        // Stop audio and visuals
         this.state.audioEngine.stop();
         this.state.visualEngine.stop();
         
-        // Update UI
         this.elements.moodSelector.classList.remove('hidden');
         this.elements.activeSession.classList.add('hidden');
         this.elements.quickReliefBtn.classList.remove('pulse');
         this.elements.pauseBtn.textContent = 'Pause';
         
-        // Save session to history
         this.saveSessionToHistory();
-        
-        // Switch to journal tab
         this.switchTab('journal');
       }
       
@@ -1711,7 +1759,6 @@
       }
       
       getFrequenciesForMood(mood, intensity) {
-        // Base frequencies adjusted by intensity
         const intensityFactor = intensity / 10;
         
         const moodFrequencies = {
@@ -1727,23 +1774,6 @@
         const beat = base.baseBeat + (4 * intensityFactor);
         
         return { carrier, beat };
-      }
-      
-      getVisualParamsForMood(mood, intensity) {
-        const intensityFactor = intensity / 10;
-        
-        const moodVisuals = {
-          stress: { type: 'flow', baseSpeed: 0.8, color: '#ff6b6b' },
-          anxiety: { type: 'particles', baseSpeed: 1.2, color: '#ff9e2d' },
-          sadness: { type: 'ink', baseSpeed: 0.3, color: '#4cc9f0' },
-          anger: { type: 'fractal', baseSpeed: 1.5, color: '#f72585' },
-          fatigue: { type: 'particles', baseSpeed: 0.2, color: '#7209b7' }
-        };
-        
-        const base = moodVisuals[mood] || moodVisuals.stress;
-        const speed = base.baseSpeed * (0.5 + intensityFactor);
-        
-        return { type: base.type, speed, color: base.color };
       }
       
       saveSessionToHistory() {
@@ -1815,7 +1845,6 @@
       renderProgressChart() {
         const ctx = this.elements.progressChart.getContext('2d');
         
-        // Group by day and calculate average intensity per mood
         const moodData = {
           stress: [],
           anxiety: [],
@@ -1827,7 +1856,6 @@
         const dates = [];
         const dataMap = {};
         
-        // Process last 30 days of data
         const now = new Date();
         for (let i = 29; i >= 0; i--) {
           const date = new Date(now);
@@ -1843,7 +1871,6 @@
           };
         }
         
-        // Populate data
         this.state.sessionHistory.forEach(session => {
           const sessionDate = new Date(session.date);
           const dateKey = sessionDate.toISOString().split('T')[0];
@@ -1854,7 +1881,6 @@
           }
         });
         
-        // Calculate averages
         dates.forEach(date => {
           Object.keys(moodData).forEach(mood => {
             const data = dataMap[date][mood];
@@ -1863,9 +1889,7 @@
           });
         });
         
-        // Create chart
         if (window.Chart) {
-          // Destroy previous chart if it exists
           if (this.state.progressChart) {
             this.state.progressChart.destroy();
           }
@@ -1989,7 +2013,6 @@
               
               const volume = sum / bufferLength;
               
-              // Detect breath (simple threshold-based detection)
               if (volume > 10 && !breathDetected && volume > lastVolume * 1.5) {
                 breathDetected = true;
                 const now = Date.now();
@@ -2018,7 +2041,6 @@
             
             detectBreath();
             
-            // Save the stream and analyser to stop later
             this.state.biofeedbackStream = stream;
             this.state.biofeedbackAnalyser = analyser;
           })
@@ -2081,7 +2103,6 @@
         const currentMinutes = now.getMinutes();
         const currentTime = `${currentHours.toString().padStart(2, '0')}:${currentMinutes.toString().padStart(2, '0')}`;
         
-        // Check morning reminder
         if (this.state.reminders.morning && this.state.reminders.morning.enabled) {
           if (currentTime === this.state.reminders.morning.time) {
             this.showNotification('🌞 Morning Reset Time', {
@@ -2090,7 +2111,6 @@
           }
         }
         
-        // Check evening reminder
         if (this.state.reminders.evening && this.state.reminders.evening.enabled) {
           if (currentTime === this.state.reminders.evening.time) {
             this.showNotification('🌙 Evening Wind Down', {
@@ -2119,8 +2139,7 @@
       }
     }
     
-    // Embedded Chart.js (minified and modified to work inline)
-    // This is a heavily simplified version of Chart.js for our needs
+    // Embedded Chart.js
     (function() {
       if (typeof window.Chart === 'undefined') {
         window.Chart = function(ctx) {
@@ -2150,10 +2169,8 @@
                 right: ctx.canvas.width
               };
               
-              // Clear canvas
               ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
               
-              // Draw grid
               if (options.scales && options.scales.y) {
                 const yScale = options.scales.y;
                 const yRange = yScale.max - yScale.min;
@@ -2171,7 +2188,6 @@
                 ctx.stroke();
               }
               
-              // Draw datasets
               datasets.forEach((dataset, i) => {
                 if (!gradients[i]) {
                   gradients[i] = createGradient(ctx, area, dataset.borderColor);
@@ -2198,7 +2214,6 @@
                     ctx.lineTo(x, y);
                   }
                   
-                  // Draw point
                   if (options.elements && options.elements.point && options.elements.point.radius > 0) {
                     ctx.beginPath();
                     ctx.arc(x, y, options.elements.point.radius, 0, Math.PI * 2);
@@ -2221,4 +2236,4 @@
     });
   </script>
 </body>
-</html>
+  </html>
